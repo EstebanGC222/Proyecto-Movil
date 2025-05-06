@@ -1,4 +1,6 @@
-{
+import 'dotenv/config';
+
+export default {
   "expo": {
     "name": "Proyecto_React",
     "slug": "Proyecto_React",
@@ -23,6 +25,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "Env":{
+      ApiKey: process.env.API_KEY
     }
   }
 }

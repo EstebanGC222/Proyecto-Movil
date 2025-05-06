@@ -3,8 +3,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 
+import { GruposProvider } from './context/GruposContext'; 
+
 import Inicio from './screens/Inicio';
-import Grupos from './screens/Grupos';
+import NavegacionGrupos from './screens/screens_grupos/NavegacionGrupos';
 import Configuracion from './screens/Configuracion';
 
 const Tab = createBottomTabNavigator();
@@ -13,6 +15,7 @@ const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
+    <GruposProvider>
     <NavigationContainer>
       <Tab.Navigator initialRouteName='Inicio'
         screenOptions={({ route }) => ({
@@ -32,10 +35,11 @@ export default function App() {
         })}
       >
         
-        <Tab.Screen name="Grupos" component={Grupos} options={{ headerShown: false }} />
+        <Tab.Screen name="Grupos" component={NavegacionGrupos} options={{ headerShown: false }} />
         <Tab.Screen name="Inicio" component={Inicio} options={{ headerShown: false }} />
         <Tab.Screen name="Configuración" component={Configuracion} />
       </Tab.Navigator>
     </NavigationContainer>
+    </GruposProvider>
   );
 }
