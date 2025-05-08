@@ -29,6 +29,8 @@ export default function CrearGrupoScreen({ navigation }) {
   const [cargandoContactos, setCargandoContactos] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false); 
+  
+  const [Cantidad, setCantidad] = useState(0);
 
   // --- EFECTO PARA PERMISOS Y CARGA DE CONTACTOS ---
   useEffect(() => {
@@ -89,9 +91,15 @@ const handleCrearGrupo = useCallback(async () => { // La hacemos async para usar
     Alert.alert("Error", "El nombre del grupo no puede estar vacío.");
     return; // Detiene la ejecución si no es válido
   }
+
   if (participantesSeleccionados.length === 0) {
       Alert.alert("Error", "Debes seleccionar al menos un participante.");
       return; // Detiene la ejecución
+  }
+
+  if (Cantidad === '' || Cantidad === 0) {
+    Alert.alert("Error", "La cantidad no puede estar vacía.");
+    return;
   }
 
   // 2. Iniciar Estado de Carga (UX)
@@ -108,6 +116,8 @@ const handleCrearGrupo = useCallback(async () => { // La hacemos async para usar
       descripcion: descripcionGrupo.trim(), // Quitar espacios extra
       // Usamos los IDs mapeados
       participantes: participantesIds,
+      //Aqui usamos la Cantidad para el valor
+      Cantidad: Cantidad,
       // Aquí usamos serverTimestamp()
       fechaCreacion: serverTimestamp(),
     };
@@ -148,6 +158,7 @@ const handleCrearGrupo = useCallback(async () => { // La hacemos async para usar
     );
   }, [contactos, searchQuery]);
 
+
   // --- RENDERIZADO DE CADA CONTACTO ---
   const renderContactoItem = useCallback(({ item }) => {
     const isSelected = participantesSeleccionados.some(p => p.id === item.id);
@@ -162,6 +173,15 @@ const handleCrearGrupo = useCallback(async () => { // La hacemos async para usar
     );
   }, [participantesSeleccionados, cargandoContactos, toggleParticipante]);
 
+  const Formato = (value) => {
+    if (!value) return '$0.00';
+
+    const Decimal = parseFloat(Value);
+    
+    if (isNaN(Decimal)) return '$0.00';
+  
+    return `$${Decimal.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
 
   // --- RENDERIZADO PRINCIPAL ---
   return (
@@ -207,6 +227,16 @@ const handleCrearGrupo = useCallback(async () => { // La hacemos async para usar
                 onChangeText={setDescripcionGrupo}
                 multiline
                />
+
+              <Text style={styles.label}>Ingrese una cantidad</Text>
+              <TextInput
+                value={Cantidad}
+                onChangeText={setCantidad}
+                placeholder="Cantidad"
+                keyboardType="number-pad"
+                style={styles.input}
+              />
+
               <View style={styles.buttonContainer}>
                   <Button
                     title={isSubmitting ? "Creando..." : "Crear Grupo"} // Cambia el título

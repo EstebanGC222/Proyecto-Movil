@@ -32,6 +32,8 @@ export default function EditarGrupoScreen({ route, navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false); // Guardado de cambios
 
+  const [Cantidad, setCantidad] = useState(''); // Estado para la cantidad de pago
+
   const { grupoId } = route.params || {};
 
   // --- Efecto para Cargar Datos INICIALES y Contactos ---
@@ -63,6 +65,7 @@ export default function EditarGrupoScreen({ route, navigation }) {
           idsParticipantesIniciales = grupoData.participantes || [];
           setNombreGrupo(grupoData.nombre || '');
           setDescripcionGrupo(grupoData.descripcion || '');
+          setCantidad(grupoData.cantidad || '');
         } else {
           throw new Error("No se encontró el grupo a editar.");
         }
@@ -159,21 +162,29 @@ export default function EditarGrupoScreen({ route, navigation }) {
         Alert.alert("Error", "Asegúrate de que el grupo tenga nombre y al menos un participante.");
         return;
     }
+
+    if (Cantidad === '') {
+      Alert.alert("Error", "La cantidad no puede estar vacía.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
         const participantesIds = participantesSeleccionados.map(p => p.id);
         if (!participantesIds.every(id => typeof id === 'string')) { throw new Error("Error interno: formato de IDs incorrecto."); }
-        const datosActualizados = { nombre: nombreGrupo.trim(), descripcion: descripcionGrupo.trim(), participantes: participantesIds };
+        const datosActualizados = { nombre: nombreGrupo.trim(), descripcion: descripcionGrupo.trim(), participantes: participantesIds, Cantidad: Cantidad};
         const docRef = doc(db, "grupos", grupoId);
         await updateDoc(docRef, datosActualizados);
         Alert.alert("Éxito", "Grupo actualizado.");
+
+        console.log("Grupo actualizado:", { id: grupoId, ...datosActualizados });
+        
         navigation.goBack();
     } catch (error) {
         console.error("EditarGrupoScreen: Error al actualizar:", error);
         Alert.alert("Error", `No se pudo actualizar. ${error.message}`);
     } finally { setIsSubmitting(false); }
-  }, [grupoId, nombreGrupo, descripcionGrupo, participantesSeleccionados, navigation]);
-
+  }, [grupoId, nombreGrupo, descripcionGrupo, participantesSeleccionados, Cantidad, navigation]);
 
   // --- FILTRADO DE CONTACTOS ---
   const filteredContacts = useMemo(() => {
@@ -221,13 +232,18 @@ export default function EditarGrupoScreen({ route, navigation }) {
         <Text style={styles.label}>Descripción (Opcional)</Text>
         <TextInput style={[styles.input, styles.textArea]} value={descripcionGrupo} onChangeText={setDescripcionGrupo} multiline/>
         <View style={styles.buttonContainer}>
-            <Button
-                title={isSubmitting ? "Guardando..." : "Guardar Cambios"}
-                onPress={handleGuardarCambios}
-                disabled={isSubmitting || !nombreGrupo.trim() || participantesSeleccionados.length === 0}
-            />
+
+        <Text style={styles.label}>Ingrese una cantidad para actualizar</Text>
+        <TextInput style={[styles.input, styles.textArea]} value={Cantidad} onChangeText={setCantidad} keyboardType="number-pad"/>
+
+        <Button
+            title={isSubmitting ? "Guardando..." : "Guardar Cambios"}
+            onPress={handleGuardarCambios}
+            disabled={isSubmitting || !nombreGrupo.trim() || participantesSeleccionados.length === 0}
+        />
             {isSubmitting && <ActivityIndicator style={styles.submitIndicator} size="small" color="#007bff"/>}
         </View>
+
 
         {/* Sección Participantes Seleccionados (Usa p.name) */}
         {participantesSeleccionados.length > 0 && (

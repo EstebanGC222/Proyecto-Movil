@@ -22,6 +22,8 @@ export default function DetalleGrupoScreen({ route, navigation }) {
     const [loadingParticipantes, setLoadingParticipantes] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    const [Cantidad, setCantidad] = useState(0);
+
     const { grupoId } = route.params || {};
     const unsubscribeRef = useRef(null);
     const isMountedRef = useRef(true);
@@ -102,6 +104,8 @@ export default function DetalleGrupoScreen({ route, navigation }) {
                 const grupoData = { id: docSnap.id, ...docSnap.data() };
                 const participantesNuevos = grupoData.participantes || [];
 
+                console.log("DetalleGrupoScreen: Grupo recibido:", grupoData);
+
                 // Compara con el estado ACTUAL usando una función en setGrupo
                 setGrupo(currentGrupo => {
                     const participantesActuales = currentGrupo?.participantes || [];
@@ -123,6 +127,9 @@ export default function DetalleGrupoScreen({ route, navigation }) {
                         // Si no necesita cargar nombres, asegurarse que loading general se quite
                         if (!loadingParticipantes && loading) setLoading(false);
                     }
+
+                    console.log("DetalleGrupoScreen" + grupoData);
+
                      // Siempre actualizar el grupo con los últimos datos del snapshot
                     return grupoData;
                 });
@@ -199,6 +206,11 @@ export default function DetalleGrupoScreen({ route, navigation }) {
         <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
             <Text style={styles.titulo}>{grupo.nombre}</Text>
             {grupo.descripcion ? (<Text style={styles.descripcion}>{grupo.descripcion}</Text>) : (<Text style={styles.descripcion}>Sin descripción.</Text>)}
+            
+            <Text style={styles.label}>Valor ingresado</Text>
+            
+            <Text style={styles.descripcion}>{grupo.Cantidad}</Text>
+
             <View style={styles.separador} />
 
             <Text style={styles.label}>Participantes:</Text>
@@ -210,8 +222,8 @@ export default function DetalleGrupoScreen({ route, navigation }) {
                    {error && permisoContactos === 'granted' && participantesInfo.every(p=>p.name.includes('ID:')) && (<Text style={[styles.permisoInfo, styles.errorColor]}>(Error al cargar nombres)</Text>)}
                  </View>
                )
-             : (<Text style={styles.noParticipantes}>{grupo.participantes?.length > 0 ? 'No se pudieron cargar.' : 'No hay participantes.'}</Text>)
-            }
+             : (<Text style={styles.noParticipantes}>{grupo.participantes?.length > 0 ? 'No se pudieron cargar.' : 'No hay participantes.'}</Text>
+                )}
 
             <View style={styles.separador} />
 
