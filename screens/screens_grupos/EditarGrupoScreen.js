@@ -168,6 +168,13 @@ export default function EditarGrupoScreen({ route, navigation }) {
       return;
     }
 
+    console.log("Esta es la cantidad: ",Cantidad)
+
+    if (isNaN(Number(Cantidad)) || Number(Cantidad) <= 0) {
+      Alert.alert("Error", "La cantidad debe ser un número.");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
         const participantesIds = participantesSeleccionados.map(p => p.id);
@@ -234,7 +241,14 @@ export default function EditarGrupoScreen({ route, navigation }) {
         <View style={styles.buttonContainer}>
 
         <Text style={styles.label}>Ingrese una cantidad para actualizar</Text>
-        <TextInput style={[styles.input, styles.textArea]} value={Cantidad} onChangeText={setCantidad} keyboardType="number-pad"/>
+        <TextInput style={styles.input}
+          value={Cantidad.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} // Formato de miles
+          onChangeText={(text) => {
+            const numericValue = text.replace(/[^0-9]/g, '');
+            setCantidad(numericValue);
+          }}
+          keyboardType="number-pad"
+        />
 
         <Button
             title={isSubmitting ? "Guardando..." : "Guardar Cambios"}

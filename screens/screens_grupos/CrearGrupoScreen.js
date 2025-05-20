@@ -173,16 +173,6 @@ const handleCrearGrupo = useCallback(async () => { // La hacemos async para usar
     );
   }, [participantesSeleccionados, cargandoContactos, toggleParticipante]);
 
-  const Formato = (value) => {
-    if (!value) return '$0.00';
-
-    const Decimal = parseFloat(Value);
-    
-    if (isNaN(Decimal)) return '$0.00';
-  
-    return `$${Decimal.toLocaleString('es-CL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
-
   // --- RENDERIZADO PRINCIPAL ---
   return (
     // Usamos ScrollView como contenedor principal
@@ -230,8 +220,11 @@ const handleCrearGrupo = useCallback(async () => { // La hacemos async para usar
 
               <Text style={styles.label}>Ingrese una cantidad</Text>
               <TextInput
-                value={Cantidad}
-                onChangeText={setCantidad}
+                value={Cantidad.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
+                onChangeText={(text) => {
+                  const numericValue = text.replace(/[^0-9]/g, '');
+                  setCantidad(numericValue);
+                }}
                 placeholder="Cantidad"
                 keyboardType="number-pad"
                 style={styles.input}

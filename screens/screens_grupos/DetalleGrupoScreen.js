@@ -77,7 +77,6 @@ export default function DetalleGrupoScreen({ route, navigation }) {
         isLoadingNames.current = false;
     };
 
-
     // --- Efecto Principal: Escuchar Grupo (Dependencia SOLO en grupoId) ---
     useEffect(() => {
         isMountedRef.current = true; // Marcar como montado al inicio
@@ -92,7 +91,9 @@ export default function DetalleGrupoScreen({ route, navigation }) {
         console.log(`DetalleGrupoScreen: useEffect Montando/Escuchando grupo ID: ${grupoId}`);
 
         const docRef = doc(db, "grupos", grupoId);
-
+        Cantidad
+        Cantidad
+        Cantidad
         unsubscribeRef.current = onSnapshot(docRef, (docSnap) => {
             if (!isMountedRef.current) {
                  console.log("DetalleGrupoScreen: Recibido snapshot pero desmontado.");
@@ -209,7 +210,9 @@ export default function DetalleGrupoScreen({ route, navigation }) {
             
             <Text style={styles.label}>Valor ingresado</Text>
             
-            <Text style={styles.descripcion}>{grupo.Cantidad}</Text>
+            <Text style={styles.descripcion}>
+                {new Intl.NumberFormat().format(grupo.Cantidad)}
+            </Text>
 
             <View style={styles.separador} />
 
