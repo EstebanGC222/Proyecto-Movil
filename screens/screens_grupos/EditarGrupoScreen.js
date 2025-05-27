@@ -1,302 +1,373 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  Button,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  Keyboard,
-  ScrollView
+  View, Text, TextInput, Button, StyleSheet, FlatList,
+  TouchableOpacity, Alert, ActivityIndicator, KeyboardAvoidingView,
+  Platform, Keyboard, ScrollView
 } from 'react-native';
 import * as Contacts from 'expo-contacts';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig'; 
+import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { useAuth } from '../../context/AuthContext';
 
 export default function EditarGrupoScreen({ route, navigation }) {
+  const { usuarioAutenticado } = useAuth();
+
   // --- Estados ---
   const [nombreGrupo, setNombreGrupo] = useState('');
   const [descripcionGrupo, setDescripcionGrupo] = useState('');
-  // Estado SIEMPRE contendrá objetos { id: string, name: string | null }
+  // participantesSeleccionados almacenará [{ uid, nombreParaMostrar }] EXCLUYENDO al usuarioAutenticado
   const [participantesSeleccionados, setParticipantesSeleccionados] = useState([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [errorCargaInicial, setErrorCargaInicial] = useState(null);
-  const [contactos, setContactos] = useState([]); // Lista completa de contactos [{id, name}]
+  const [contactosDelTelefono, setContactosDelTelefono] = useState([]);
   const [permisoContactos, setPermisoContactos] = useState(null);
-  const [cargandoContactos, setCargandoContactos] = useState(false); // Carga de lista completa
+  const [cargandoContactosTelefono, setCargandoContactosTelefono] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false); // Guardado de cambios
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [cantidad, setCantidad] = useState('');
 
-  const [Cantidad, setCantidad] = useState(''); // Estado para la cantidad de pago
+  const [usuariosRegistrados, setUsuariosRegistrados] = useState([]);
+  const [cargandoUsuarios, setCargandoUsuarios] = useState(true);
 
   const { grupoId } = route.params || {};
+  const isMounted = useRef(true); // Usar useRef para isMounted
 
-  // --- Efecto para Cargar Datos INICIALES y Contactos ---
+  // --- FUNCIÓN PARA NORMALIZAR NÚMEROS (SOLO DÍGITOS) ---
+  const normalizarNumeroSoloDigitos = (numero) => {
+    if (!numero || typeof numero !== 'string') return '';
+    return numero.replace(/\D/g, '');
+  };
+
+  // --- Efecto para Cargar Datos INICIALES ---
   useEffect(() => {
+    isMounted.current = true; // Establecer al montar
+
     if (!grupoId) {
-      setErrorCargaInicial("No se proporcionó ID de grupo para editar.");
-      setInitialLoading(false);
+      if (isMounted.current) setErrorCargaInicial("No se proporcionó ID de grupo para editar.");
+      if (isMounted.current) setInitialLoading(false);
       return;
     }
 
-    let isMounted = true;
-    setInitialLoading(true);
-    setErrorCargaInicial(null);
-    setParticipantesSeleccionados([]); // Limpiar estado inicial
+    if (isMounted.current) {
+        setInitialLoading(true);
+        setErrorCargaInicial(null);
+        setParticipantesSeleccionados([]); // Resetear
+    }
 
-    const cargarDatos = async () => {
-      let grupoData = null;
-      let idsParticipantesIniciales = [];
-
+    const cargarTodosLosDatos = async () => {
       try {
-        // 1. Obtener datos del grupo
-        const docRef = doc(db, "grupos", grupoId);
-        const docSnap = await getDoc(docRef);
+        // 1. Cargar Usuarios Registrados
+        if (isMounted.current) setCargandoUsuarios(true);
+        const querySnapshotUsuarios = await getDocs(collection(db, "usuarios"));
+        const listaUsuariosTemp = [];
+        querySnapshotUsuarios.forEach((doc) => {
+          listaUsuariosTemp.push({ uid: doc.id, ...doc.data() });
+        });
+        if (!isMounted.current) return; // Comprobar antes de setState
+        setUsuariosRegistrados(listaUsuariosTemp);
+        if (isMounted.current) setCargandoUsuarios(false);
 
-        if (!isMounted) return;
 
-        if (docSnap.exists()) {
-          grupoData = { id: docSnap.id, ...docSnap.data() };
-          idsParticipantesIniciales = grupoData.participantes || [];
+        // 2. Cargar Datos del Grupo Específico
+        const docRefGrupo = doc(db, "grupos", grupoId);
+        const docSnapGrupo = await getDoc(docRefGrupo);
+        if (!isMounted.current) return;
+
+        if (docSnapGrupo.exists()) {
+          const grupoData = { id: docSnapGrupo.id, ...docSnapGrupo.data() };
           setNombreGrupo(grupoData.nombre || '');
           setDescripcionGrupo(grupoData.descripcion || '');
-          setCantidad(grupoData.cantidad || '');
+          setCantidad(grupoData.Cantidad !== undefined ? String(grupoData.Cantidad) : '');
+
+          // Filtramos al usuarioAutenticado de la lista de participantes que cargamos del grupo
+          // para que `participantesSeleccionados` solo contenga a los OTROS miembros.
+          const otrosParticipantes = (grupoData.participantes || []).filter(
+            p => p.uid !== usuarioAutenticado?.uid
+          );
+          setParticipantesSeleccionados(otrosParticipantes);
+          console.log("EditarGrupoScreen: Datos del grupo cargados. Otros Participantes para UI:", otrosParticipantes);
         } else {
           throw new Error("No se encontró el grupo a editar.");
         }
 
-        // 2. Cargar TODOS los contactos Y OBTENER NOMBRES de iniciales
-        setCargandoContactos(true);
+        // 3. Cargar Contactos del Teléfono
+        if (isMounted.current) setCargandoContactosTelefono(true);
         const { status } = await Contacts.requestPermissionsAsync();
-        if (isMounted) setPermisoContactos(status); else return;
+        if (!isMounted.current) return;
+        setPermisoContactos(status);
 
-        let infoInicialParticipantes = [];
         let listaCompletaContactos = [];
-
         if (status === 'granted') {
           const { data: allContactsData } = await Contacts.getContactsAsync({
-            fields: [Contacts.Fields.Name, Contacts.Fields.ID], // Pedir ID y Name
+            fields: [Contacts.Fields.Name, Contacts.Fields.ID, Contacts.Fields.PhoneNumbers],
           });
-          // Filtrar y ordenar lista completa
-          listaCompletaContactos = allContactsData
-            .filter(c => c.name) // Asegurarse de que tiene nombre
-            .sort((a, b) => a.name.localeCompare(b.name));
-
-          // Mapear IDs iniciales a { id, name } usando la lista completa
-          infoInicialParticipantes = idsParticipantesIniciales.map(idBuscado => {
-            const contactoEncontrado = listaCompletaContactos.find(c => c.id === idBuscado);
-            return {
-              id: idBuscado,
-              // Guarda en la propiedad 'name'
-              name: contactoEncontrado?.name || `(ID: ${idBuscado} - No encontrado)`
-            };
-          }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Ordenar por 'name'
-
-        } else {
-          // Fallback a IDs si no hay permiso
-          infoInicialParticipantes = idsParticipantesIniciales.map(id => ({
-            id: id,
-            name: `(ID: ${id})` // Guarda en 'name'
-          }));
+          if (allContactsData.length > 0) {
+              listaCompletaContactos = allContactsData
+              .filter(c => c.name && c.phoneNumbers && c.phoneNumbers.length > 0)
+              .map(c => ({
+                  id: c.id, name: c.name, phoneNumber: c.phoneNumbers[0].number
+              }))
+              .sort((a, b) => a.name.localeCompare(b.name));
+          }
         }
-
-        if (isMounted) {
-          setContactos(listaCompletaContactos);
-          // Actualizar el estado con los objetos {id, name} correctos
-          setParticipantesSeleccionados(infoInicialParticipantes);
+        if (isMounted.current) {
+          setContactosDelTelefono(listaCompletaContactos);
+          setCargandoContactosTelefono(false);
         }
 
       } catch (err) {
-        console.error("EditarGrupoScreen: Error cargando datos:", err);
-        if (isMounted) setErrorCargaInicial(err.message || "Error al cargar datos.");
+        console.error("EditarGrupoScreen: Error cargando datos iniciales:", err);
+        if (isMounted.current) setErrorCargaInicial(err.message || "Error al cargar datos.");
       } finally {
-        if (isMounted) {
-          setCargandoContactos(false);
-          setInitialLoading(false);
+        if (isMounted.current) setInitialLoading(false);
+      }
+    };
+
+    cargarTodosLosDatos();
+
+    return () => { isMounted.current = false; } // Cleanup
+  }, [grupoId, usuarioAutenticado]); // usuarioAutenticado en dependencias por si cambia (logout/login)
+
+
+  // --- FUNCIÓN toggleParticipante ---
+  const toggleParticipante = useCallback((contactoDelTelefonoSeleccionado) => {
+    if (!contactoDelTelefonoSeleccionado.phoneNumber) { Alert.alert("Sin Número", `El contacto ${contactoDelTelefonoSeleccionado.name} no tiene número.`); return; }
+    if (cargandoUsuarios) { Alert.alert("Cargando", "Usuarios cargando..."); return; }
+    const numeroContactoLimpio = normalizarNumeroSoloDigitos(contactoDelTelefonoSeleccionado.phoneNumber);
+    if (!numeroContactoLimpio) { Alert.alert("Número Inválido", `Número de ${contactoDelTelefonoSeleccionado.name} inválido.`); return; }
+
+    let usuarioEncontrado = null;
+    for (const usr of usuariosRegistrados) {
+      const numeroRegistradoLimpio = usr.numeroTelefono;
+      if (numeroRegistradoLimpio) {
+        if (numeroRegistradoLimpio.endsWith(numeroContactoLimpio) || numeroContactoLimpio.endsWith(numeroRegistradoLimpio)) {
+          if (Math.min(numeroRegistradoLimpio.length, numeroContactoLimpio.length) >= 7) {
+            usuarioEncontrado = usr; break;
+          }
         }
       }
-    };
-
-    cargarDatos();
-
-    return () => { isMounted = false; }
-  }, [grupoId]);
-
-
-  // --- FUNCIÓN toggleParticipante (Estandarizada a 'name') ---
-  const toggleParticipante = useCallback((contacto) => {
-    if (!contacto || !contacto.id) {
-      console.error("toggleParticipante llamado sin contacto válido:", contacto);
-      return;
     }
-    // Crea el objeto SIEMPRE con la propiedad 'name'
-    const participanteSimple = {
-      id: contacto.id,
-      name: contacto.name || `(ID: ${contacto.id})` // Usa name, fallback a ID
-    };
 
-    setParticipantesSeleccionados((prevSeleccionados) => {
-      const existeIndex = prevSeleccionados.findIndex(p => p.id === participanteSimple.id);
-      let newState;
-      if (existeIndex > -1) {
-        newState = prevSeleccionados.filter((_, index) => index !== existeIndex);
-      } else {
-        newState = [...prevSeleccionados, participanteSimple];
-        // Ordenar por 'name'
-        newState.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    if (usuarioEncontrado) {
+      // NO AÑADIR al usuarioAutenticado (editor) a través de este método
+      if (usuarioAutenticado && usuarioEncontrado.uid === usuarioAutenticado.uid) {
+        Alert.alert("Información", "Como editor del grupo, ya estás incluido y no puedes añadirte/quitarte desde esta lista.");
+        return;
       }
-      return newState;
-    });
-  }, []);
 
+      setParticipantesSeleccionados((prevSeleccionados) => {
+        const yaEstaSeleccionado = prevSeleccionados.some(p => p.uid === usuarioEncontrado.uid);
+        if (yaEstaSeleccionado) {
+          return prevSeleccionados.filter(p => p.uid !== usuarioEncontrado.uid);
+        } else {
+          return [...prevSeleccionados, { uid: usuarioEncontrado.uid, nombreParaMostrar: contactoDelTelefonoSeleccionado.name }];
+        }
+      });
+    } else {
+      Alert.alert("Usuario no Registrado", `El contacto ${contactoDelTelefonoSeleccionado.name} (${contactoDelTelefonoSeleccionado.phoneNumber}) no está registrado.`);
+    }
+  }, [usuariosRegistrados, cargandoUsuarios, usuarioAutenticado]);
 
   // --- FUNCIÓN PARA GUARDAR CAMBIOS ---
   const handleGuardarCambios = useCallback(async () => {
     Keyboard.dismiss();
-    if (!grupoId || !nombreGrupo.trim() || participantesSeleccionados.length === 0) {
-        Alert.alert("Error", "Asegúrate de que el grupo tenga nombre y al menos un participante.");
+    if (!grupoId || !nombreGrupo.trim()) { /* ... alerta ... */ return; }
+    const cantidadLimpia = String(cantidad).replace(/\./g, '');
+    const cantidadNumerica = Number(cantidadLimpia);
+    if (String(cantidad).trim() === '' || isNaN(cantidadNumerica) || cantidadNumerica <= 0) { /* ... alerta ... */ return; }
+
+    // Construir la lista final de participantes para Firestore
+    // Siempre incluye al editor (usuarioAutenticado) con el nombre "Tú"
+    // y luego los otros participantes que están en 'participantesSeleccionados'
+    let participantesFinalesParaGuardar = [];
+    if (usuarioAutenticado) {
+      participantesFinalesParaGuardar.push({ uid: usuarioAutenticado.uid, nombreParaMostrar: "Tú" });
+    }
+    // Añadimos los otros, asegurándonos de no duplicar al editor si por alguna razón
+    // su UID estuviera en participantesSeleccionados (aunque toggleParticipante debería prevenirlo)
+    participantesSeleccionados.forEach(p => {
+      if (p.uid !== usuarioAutenticado?.uid) {
+        participantesFinalesParaGuardar.push(p);
+      }
+    });
+
+    // Validar que haya al menos un participante (el creador/editor)
+    if (participantesFinalesParaGuardar.length === 0 && usuarioAutenticado) {
+         Alert.alert("Error", "El editor debe estar en el grupo."); // Caso extremo
+         return;
+    } else if (participantesFinalesParaGuardar.length === 0) {
+        Alert.alert("Error", "El grupo debe tener al menos un participante.");
         return;
-    }
-
-    if (Cantidad === '') {
-      Alert.alert("Error", "La cantidad no puede estar vacía.");
-      return;
-    }
-
-    console.log("Esta es la cantidad: ",Cantidad)
-
-    if (isNaN(Number(Cantidad)) || Number(Cantidad) <= 0) {
-      Alert.alert("Error", "La cantidad debe ser un número.");
-      return;
     }
 
     setIsSubmitting(true);
     try {
-        const participantesIds = participantesSeleccionados.map(p => p.id);
-        if (!participantesIds.every(id => typeof id === 'string')) { throw new Error("Error interno: formato de IDs incorrecto."); }
-        const datosActualizados = { nombre: nombreGrupo.trim(), descripcion: descripcionGrupo.trim(), participantes: participantesIds, Cantidad: Cantidad};
-        const docRef = doc(db, "grupos", grupoId);
-        await updateDoc(docRef, datosActualizados);
-        Alert.alert("Éxito", "Grupo actualizado.");
-
-        console.log("Grupo actualizado:", { id: grupoId, ...datosActualizados });
-        
-        navigation.goBack();
+      const datosActualizados = {
+        nombre: nombreGrupo.trim(),
+        descripcion: descripcionGrupo.trim(),
+        participantes: participantesFinalesParaGuardar,
+        Cantidad: cantidadNumerica,
+      };
+      const docRef = doc(db, "grupos", grupoId);
+      await updateDoc(docRef, datosActualizados);
+      Alert.alert("Éxito", "Grupo actualizado correctamente.");
+      navigation.goBack();
     } catch (error) {
-        console.error("EditarGrupoScreen: Error al actualizar:", error);
-        Alert.alert("Error", `No se pudo actualizar. ${error.message}`);
-    } finally { setIsSubmitting(false); }
-  }, [grupoId, nombreGrupo, descripcionGrupo, participantesSeleccionados, Cantidad, navigation]);
+      console.error("EditarGrupoScreen: Error al actualizar:", error);
+      Alert.alert("Error", `No se pudo actualizar el grupo. ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [grupoId, nombreGrupo, descripcionGrupo, participantesSeleccionados, cantidad, navigation, usuarioAutenticado]);
 
   // --- FILTRADO DE CONTACTOS ---
-  const filteredContacts = useMemo(() => {
-    if (!searchQuery) return contactos;
-    return contactos.filter(contacto => contacto.name?.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [contactos, searchQuery]);
+  const filteredContactsDelTelefono = useMemo(() => {
+    if (!searchQuery) return contactosDelTelefono;
+    return contactosDelTelefono.filter(contacto => contacto.name?.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [contactosDelTelefono, searchQuery]);
 
   // --- RENDERIZADO DE CADA CONTACTO ---
-  const renderContactoItem = useCallback(({ item }) => {
-    const isSelected = participantesSeleccionados.some(p => p.id === item.id);
+  const renderContactoItem = useCallback(({ item: contactoDelTelefono }) => {
+    let estaVisualmenteSeleccionado = false;
+    let esElEditor = false;
+
+    if (usuariosRegistrados.length > 0 && contactoDelTelefono.phoneNumber && usuarioAutenticado) {
+        const numeroContactoLimpioVisual = normalizarNumeroSoloDigitos(contactoDelTelefono.phoneNumber);
+        const usuarioMatch = usuariosRegistrados.find(usr => {
+            const numeroRegistradoLimpioVisual = usr.numeroTelefono;
+            return numeroRegistradoLimpioVisual &&
+                   (numeroRegistradoLimpioVisual.endsWith(numeroContactoLimpioVisual) || numeroContactoLimpioVisual.endsWith(numeroRegistradoLimpioVisual)) &&
+                   Math.min(numeroRegistradoLimpioVisual.length, numeroContactoLimpioVisual.length) >= 7;
+        });
+
+        if (usuarioMatch) {
+            if (usuarioMatch.uid === usuarioAutenticado.uid) {
+                esElEditor = true; // Este contacto es el editor
+            } else {
+                estaVisualmenteSeleccionado = participantesSeleccionados.some(p => p.uid === usuarioMatch.uid);
+            }
+        }
+    }
+    // No mostrar al propio editor en la lista de contactos a añadir/quitar
+    if (esElEditor) return null;
+
     return (
       <TouchableOpacity
-        style={[styles.contactoItem, isSelected ? styles.contactoSeleccionado : {}]}
-        onPress={() => toggleParticipante(item)}
+        style={[styles.contactoItem, estaVisualmenteSeleccionado ? styles.contactoSeleccionado : {}]}
+        onPress={() => toggleParticipante(contactoDelTelefono)}
+        disabled={cargandoContactosTelefono || cargandoUsuarios}
       >
-        <Text style={styles.contactoNombre}>{item.name}</Text>
+        <Text style={styles.contactoNombre}>{contactoDelTelefono.name}</Text>
+        <Text style={styles.contactoNumero}>{contactoDelTelefono.phoneNumber}</Text>
       </TouchableOpacity>
     );
-  }, [participantesSeleccionados, toggleParticipante]);
+  }, [participantesSeleccionados, toggleParticipante, cargandoContactosTelefono, cargandoUsuarios, usuariosRegistrados, usuarioAutenticado]);
 
 
   // --- RENDERIZADO PRINCIPAL ---
-
-  if (initialLoading) {
-    return ( <View style={[styles.container, styles.centerContent]}><ActivityIndicator size="large" color="#007bff" /><Text style={styles.statusText}>Cargando datos...</Text></View> );
+  if (initialLoading || cargandoUsuarios) {
+    return ( <View style={styles.centerContent}><ActivityIndicator size="large" color="#007bff" /><Text style={styles.statusText}>Cargando datos...</Text></View> );
   }
   if (errorCargaInicial) {
-    return ( <View style={[styles.container, styles.centerContent]}><Text style={styles.errorText}>Error: {errorCargaInicial}</Text><Button title="Volver" onPress={() => navigation.goBack()} /></View> );
+    return ( <View style={styles.centerContent}><Text style={styles.errorText}>Error: {errorCargaInicial}</Text><Button title="Volver" onPress={() => navigation.goBack()} /></View> );
   }
 
   return (
     <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={styles.kavContainer}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0} // Ajusta según altura de tu header si es necesario
     >
       <ScrollView
           style={styles.scrollViewContainer}
           contentContainerStyle={styles.scrollViewContent}
           keyboardShouldPersistTaps="handled"
       >
-        {/* Inputs y botón */}
         <Text style={styles.label}>Nombre del Grupo *</Text>
         <TextInput style={styles.input} value={nombreGrupo} onChangeText={setNombreGrupo}/>
         <Text style={styles.label}>Descripción (Opcional)</Text>
         <TextInput style={[styles.input, styles.textArea]} value={descripcionGrupo} onChangeText={setDescripcionGrupo} multiline/>
-        <View style={styles.buttonContainer}>
 
-        <Text style={styles.label}>Ingrese una cantidad para actualizar</Text>
+        <Text style={styles.label}>Cantidad</Text>
         <TextInput style={styles.input}
-          value={Cantidad.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")} // Formato de miles
+          value={cantidad.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
           onChangeText={(text) => {
             const numericValue = text.replace(/[^0-9]/g, '');
             setCantidad(numericValue);
           }}
           keyboardType="number-pad"
+          placeholder="Cantidad actual"
         />
 
-        <Button
-            title={isSubmitting ? "Guardando..." : "Guardar Cambios"}
-            onPress={handleGuardarCambios}
-            disabled={isSubmitting || !nombreGrupo.trim() || participantesSeleccionados.length === 0}
-        />
+        <View style={styles.buttonContainer}>
+            <Button
+                title={isSubmitting ? "Guardando..." : "Guardar Cambios"}
+                onPress={handleGuardarCambios}
+                disabled={isSubmitting || !nombreGrupo.trim() || cargandoContactosTelefono || cargandoUsuarios }
+            />
             {isSubmitting && <ActivityIndicator style={styles.submitIndicator} size="small" color="#007bff"/>}
         </View>
 
-
-        {/* Sección Participantes Seleccionados (Usa p.name) */}
-        {participantesSeleccionados.length > 0 && (
-            <View style={styles.seleccionadosContainer}>
-               <Text style={styles.seleccionadosLabel}>Participantes Actuales:</Text>
+        {/* Sección Participantes Actuales */}
+        <View style={styles.seleccionadosContainer}>
+            <Text style={styles.seleccionadosLabel}>Participantes del Grupo:</Text>
+            
+            {/* Mostrar OTROS participantes (los que están en `participantesSeleccionados`) con opción de eliminar */}
+            {participantesSeleccionados.length > 0 ? (
                <View style={styles.seleccionadosWrapper}>
-                   {participantesSeleccionados.map(p => ( // p es {id, name}
-                       <TouchableOpacity key={p.id} onPress={() => toggleParticipante(p)} style={styles.participanteSeleccionado}>
-                           {/* Referencia directa a p.name, con fallback a ID */}
+                   {participantesSeleccionados.map(p => (
+                       <TouchableOpacity
+                           key={p.uid}
+                           onPress={() => {
+                               // Filtra directamente participantesSeleccionados para quitar por UID
+                               // Asegurándose de no quitar al editor si por error estuviera aquí
+                               if (p.uid !== usuarioAutenticado?.uid) {
+                                   setParticipantesSeleccionados(prev => prev.filter(sel => sel.uid !== p.uid));
+                               }
+                           }}
+                           style={styles.participanteSeleccionado}
+                       >
                            <Text style={styles.participanteTexto}>
-                               {p.name || `(ID: ${p.id})`} (X)
+                               {p.nombreParaMostrar} (X)
                            </Text>
                        </TouchableOpacity>
                    ))}
                </View>
+            ) : (
+                <Text style={styles.placeholderTextPequeño}>Nadie más añadido al grupo.</Text>
+            )}
+        </View>
+
+
+        {/* Sección Añadir/Quitar Participantes de Contactos del Teléfono */}
+        {permisoContactos === 'granted' && (
+            <>
+                <Text style={styles.label}>Añadir/Quitar Otros Participantes</Text>
+                <TextInput style={styles.input} placeholder="Buscar contacto..." value={searchQuery} onChangeText={setSearchQuery}/>
+                {cargandoContactosTelefono ? ( <ActivityIndicator size="small" color="#007bff" style={{marginVertical: 20}}/> )
+                : (
+                    <FlatList
+                        data={filteredContactsDelTelefono}
+                        renderItem={renderContactoItem}
+                        keyExtractor={(item) => item.id}
+                        ListEmptyComponent={
+                            <View style={styles.emptyListContainer}>
+                                <Text style={styles.placeholderText}>
+                                {searchQuery ? 'No se encontraron contactos con ese nombre.' : (contactosDelTelefono.length === 0 ? 'No hay contactos en el dispositivo.' : 'No se encontraron contactos.')}
+                                </Text>
+                            </View>
+                        }
+                        style={styles.listaContactosScrollView}
+                        scrollEnabled={false}
+                    />
+                )}
+            </>
+        )}
+        {permisoContactos === 'denied' && !cargandoContactosTelefono && (
+            <View style={styles.contenedorCentradoPermisoDenegado}>
+                <Text style={styles.placeholderText}>Permiso de contactos denegado.</Text>
             </View>
         )}
-
-        {/* Sección Añadir/Quitar Participantes */}
-        <Text style={styles.label}>Añadir/Quitar Participantes</Text>
-        <TextInput style={styles.input} placeholder="Buscar contacto..." value={searchQuery} onChangeText={setSearchQuery}/>
-        {cargandoContactos ? ( <ActivityIndicator size="small" color="#007bff" style={{marginVertical: 20}}/> )
-         : permisoContactos === 'denied' ? ( <Text style={styles.permisoInfo}>Se necesita permiso para mostrar contactos.</Text> )
-         : (
-            <FlatList
-                data={filteredContacts}
-                renderItem={renderContactoItem}
-                keyExtractor={(item) => item.id}
-                ListEmptyComponent={
-                    <View style={styles.emptyListContainer}>
-                        <Text style={styles.placeholderText}>
-                           {searchQuery ? 'No se encontraron contactos con ese nombre.' : (contactos.length === 0 ? 'No hay contactos en el dispositivo.' : 'No se encontraron contactos.')}
-                        </Text>
-                    </View>
-                }
-                style={styles.listaContactosScrollView}
-                scrollEnabled={false}
-            />
-         )}
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -317,7 +388,7 @@ const styles = StyleSheet.create({
         paddingBottom: 30,
         flexGrow: 1,
     },
-    centerContent: {
+    centerContent: { // Para el spinner de carga inicial
         flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -397,21 +468,24 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderTopColor: '#eee',
         minHeight: 150,
-        // Si necesitas limitar la altura máxima porque el ScrollView padre
-        // no funciona bien con listas muy largas + scrollEnabled=false:
-        // maxHeight: 300,
+        // maxHeight: 300, 
     },
     contactoItem: {
-        paddingVertical: 12,
+        paddingVertical: 10,
         paddingHorizontal: 5,
         borderBottomWidth: 1,
-        borderBottomColor: '#eee',
+        borderBottomColor: '#f0f0f0',
     },
     contactoSeleccionado: {
         backgroundColor: '#e7f3ff',
     },
     contactoNombre: {
         fontSize: 16,
+    },
+    contactoNumero: { 
+        fontSize: 13,
+        color: 'grey',
+        marginTop: 2,
     },
     emptyListContainer:{
       paddingVertical: 20,
@@ -428,5 +502,12 @@ const styles = StyleSheet.create({
         color: '#6c757d',
         textAlign: 'center',
         paddingVertical: 10,
-    }
+    },
+    contenedorCentradoPermisoDenegado: { 
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        minHeight: 100,
+        marginBottom: 20,
+      },
 });

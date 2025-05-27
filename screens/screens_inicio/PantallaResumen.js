@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
     alignSelf: 'center',
+    marginTop: 50,
   },
   resumenValores: {
     marginBottom: 30,
