@@ -3,14 +3,13 @@ import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity }
 
 import { useGrupos } from '../context/GruposContext';
 
-
+import { styles } from './styles';
 
 export default function Grupos({navigation}) {
 
   // Usamos nuestro hook para obtener los datos y el estado de carga del Context
   const { grupos, loading } = useGrupos();
 
-  
   // Si estamos cargando, mostramos el ActivityIndicator
   if (loading) {
     return (
@@ -68,79 +67,3 @@ export default function Grupos({navigation}) {
     </View>
   );
 }
-
-// --- Estilos ---
-const styles = StyleSheet.create({
-  contenedorPrincipal: {
-    flex: 1, // Ocupa todo el espacio disponible
-    padding: 15,
-    backgroundColor: '#f8f9fa', // Un fondo claro
-  },
-  contenedorCentrado: {
-    flex: 1, // Ocupa todo el espacio
-    justifyContent: 'center', // Centra verticalmente
-    alignItems: 'center', // Centra horizontalmente
-  },
-  titulo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
-    color: '#343a40',
-  },
-  textoVacio: {
-    fontSize: 16,
-    color: '#6c757d', // Un gris suave
-    textAlign: 'center',
-    marginBottom: 5,
-  },
-  lista: {
-    flex: 1, // Permite que la lista ocupe el espacio restante
-  },
-  itemContainer: {
-    backgroundColor: '#ffffff', // Fondo blanco para cada item
-    padding: 15,
-    marginBottom: 10,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#dee2e6', // Un borde sutil
-    shadowColor: "#000", // Sombra (opcional, para iOS)
-    shadowOffset: {
-        width: 0,
-        height: 1,
-    },
-    shadowOpacity: 0.20,
-    shadowRadius: 1.41,
-    elevation: 2, // Sombra (opcional, para Android)
-  },
-  itemNombre: {
-    fontSize: 18,
-    fontWeight: '600', // Semi-bold
-    color: '#495057',
-  },
-  itemDescripcion: {
-    fontSize: 14,
-    color: '#6c757d',
-    marginTop: 4,
-  },
-  // Estilos para el botón flotante (descomentar si lo añades)
-  
-  botonFlotante: {
-    position: 'absolute',
-    right: 20,
-    bottom: 20,
-    backgroundColor: '#007bff',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-  },
-  botonFlotanteTexto: {
-    color: 'white',
-    fontSize: 30,
-    lineHeight: 30, // Ajuste para centrar el '+'
-  },
-  
-});

@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app'; // Herramienta para establecer la conexión inicial
 import { getFirestore } from 'firebase/firestore'; // Herramienta para obtener acceso a la base de datos Firestore
+import { getStorage } from 'firebase/storage';
 
 import Constants from 'expo-constants';
 
@@ -22,6 +23,7 @@ const app = initializeApp(firebaseConfig);
 // (Inicializar Firestore)
 // Esto nos da un objeto 'db' que usaremos siempre que queramos leer o escribir en Firestore.
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 // Hacer que 'db' esté disponible para otras partes de tu app
-export { db };
+export { db, storage };

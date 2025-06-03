@@ -16,6 +16,34 @@ import Configuracion from './screens/Configuracion';
 
 const Tab = createBottomTabNavigator();
 
+// Componente que decide qué navegador mostrar (Autenticación o App Principal)
+function AppNavigator() {
+  const { usuarioAutenticado, cargandoAutenticacion } = useAuth();
+
+  console.log("AppNavigator: cargandoAutenticacion =", cargandoAutenticacion, "usuarioAutenticado =", !!usuarioAutenticado);
+
+
+  if (cargandoAutenticacion) {
+    // Muestra una pantalla de carga mientras se verifica el estado de autenticación
+    return (
+      <View style={styles.contenedorCargaGlobal}>
+        <ActivityIndicator size="large" color="#007bff" />
+      </View>
+    );
+  }
+
+  // Si la carga terminó, decide qué navegador mostrar
+  // Si hay un usuario, muestra MainAppTabs, sino AuthStackNavigator
+  return usuarioAutenticado ? (
+    <GruposProvider>
+      <MainAppTabs />
+    </GruposProvider>
+  )
+  :
+  ( 
+   <AuthStackNavigator />
+  );
+}
 
 // Componente para el TabNavigator principal de la aplicación
 function MainAppTabs() {
@@ -58,36 +86,13 @@ function MainAppTabs() {
   );
 }
 
-// Componente que decide qué navegador mostrar (Autenticación o App Principal)
-function AppNavigator() {
-  const { usuarioAutenticado, cargandoAutenticacion } = useAuth();
-
-  console.log("AppNavigator: cargandoAutenticacion =", cargandoAutenticacion, "usuarioAutenticado =", !!usuarioAutenticado);
-
-
-  if (cargandoAutenticacion) {
-    // Muestra una pantalla de carga mientras se verifica el estado de autenticación
-    return (
-      <View style={styles.contenedorCargaGlobal}>
-        <ActivityIndicator size="large" color="#007bff" />
-      </View>
-    );
-  }
-
-  // Si la carga terminó, decide qué navegador mostrar
-  // Si hay un usuario, muestra MainAppTabs, sino AuthStackNavigator
-  return usuarioAutenticado ? <MainAppTabs /> : <AuthStackNavigator />;
-}
-
 // Componente Principal de la Aplicación
 export default function App() {
   return (
     <AuthProvider>
-      <GruposProvider> 
         <NavigationContainer>
           <AppNavigator />
         </NavigationContainer>
-      </GruposProvider>
     </AuthProvider>
   );
 }

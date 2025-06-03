@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
+import { style as styles } from './styles';
+
 export default function Configuracion({ navigation }) {
   const {
     perfilUsuarioActual,
@@ -147,84 +149,12 @@ export default function Configuracion({ navigation }) {
           onPress={handleCerrarSesion}
           color="#dc3545"
         />
+
+        <Button 
+          title='Cambio de tema' 
+          onPress={()=>{}}
+        />
       </View>
     </ScrollView>
   );
 }
-
-// --- Estilos ---
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 20,
-  },
-  contenedorCentrado: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    textAlign: 'center',
-  },
-  errorText: {
-    textAlign: 'center',
-    color: 'red',
-    marginBottom: 10,
-  },
-  titulo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    paddingVertical: 20,
-    color: '#343a40',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    marginBottom: 10,
-  },
-  seccion: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    marginHorizontal: 15,
-    borderRadius: 8,
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1, },
-    shadowOpacity: 0.18,
-    shadowRadius: 1.00,
-    elevation: 1,
-    marginTop: 20,
-  },
-  seccionEspaciada: {
-    marginHorizontal: 15,
-    marginTop: 20,
-  },
-  label: {
-    fontSize: 16,
-    color: '#495057',
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  subLabel: { // Nuevo estilo para el texto de ayuda
-      fontSize: 13,
-      color: '#6c757d',
-      marginBottom: 10,
-      fontStyle: 'italic',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ced4da',
-    borderRadius: 5,
-    padding: 12,
-    fontSize: 16,
-    marginBottom: 15,
-    backgroundColor: '#fff',
-  },
-  indicadorGuardado: {
-      marginTop: 10,
-      alignSelf: 'center',
-  }
-});

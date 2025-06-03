@@ -9,6 +9,8 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@cloudinary/react": "^1.14.3",
+    "@cloudinary/url-gen": "^1.21.0",
     "@react-navigation/bottom-tabs": "^7.3.2",
     "@react-navigation/drawer": "^7.3.0",
     "@react-navigation/native": "^7.0.18",
@@ -17,7 +19,12 @@
     "constants": "^0.0.2",
     "dotenv": "^16.5.0",
     "expo": "~52.0.46",
+    "expo-camera": "~16.0.18",
     "expo-contacts": "~14.0.5",
+    "expo-device": "~7.0.3",
+    "expo-file-system": "^18.1.10",
+    "expo-media-library": "^17.1.6",
+    "expo-notifications": "~0.29.14",
     "expo-status-bar": "~2.0.1",
     "firebase": "^11.6.1",
     "react": "18.3.1",

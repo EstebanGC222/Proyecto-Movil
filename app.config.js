@@ -28,6 +28,11 @@ export default {
     },
     "Env":{
       ApiKey: process.env.API_KEY
+    },
+    "Couldinary":{
+      CloudName:process.env.CLOUD_NAME,
+      /* CloudPreset:process.env.UPLOAD_PRESET, */
+      CloudPresets:process.env.CLOUD_PRESET,
     }
   }
 }

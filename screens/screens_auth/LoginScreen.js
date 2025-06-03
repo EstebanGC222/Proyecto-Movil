@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useAuth } from '../../context/AuthContext'; 
 
+import { styles } from './../styles';
+
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -87,7 +89,7 @@ export default function LoginScreen({ navigation }) {
   );
 }
 
-// Estilos
+/* // Estilos
 const styles = StyleSheet.create({
   kavContainer: {
     flex: 1,
@@ -115,8 +117,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   spinner: {
-    marginVertical: 10, // Altura del botón
-    height: 40, // Para que ocupe un espacio similar al botón
+    marginVertical: 10, 
+    height: 40,
     alignSelf: 'center',
   },
   enlace: {
@@ -126,6 +128,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   enlaceDeshabilitado: {
-    color: 'grey',
-  }
-});
+    color: 'grey'
+  },
+}); */

@@ -3,6 +3,8 @@ import { collection, getDocs, onSnapshot, query } from 'firebase/firestore';
 
 import { db } from '../firebaseConfig'; // 
 
+import { useAuth } from './AuthContext'
+
 // 1. Crear el Context
 const GruposContext = createContext();
 
@@ -15,13 +17,14 @@ export const GruposProvider = ({ children }) => {
   //    b) Un indicador para saber si estamos cargando los grupos desde Firebase. Empieza en 'false'.
   const [loading, setLoading] = useState(false); 
 
-
- 
+  const { usuarioAutenticado } = useAuth();
   
   // Función para escuchar los grupos en tiempo real
   useEffect(() => {
     setLoading(true); // Empezamos a cargar
     console.log("GruposContext: Iniciando escucha de grupos...");
+
+    console.log("Usuario Authenticado: ", usuarioAutenticado)
   
     // Creamos una consulta a la colección 'grupos'
     const q = query(collection(db, "grupos")); // Podríamos añadir orderBy, where, etc. aquí
@@ -36,8 +39,17 @@ export const GruposProvider = ({ children }) => {
         // Creamos un objeto por cada grupo, incluyendo su ID y sus datos internos
         gruposLeidos.push({ id: doc.id, ...doc.data() });
       });
+
+      console.log("grupos leidos: ", gruposLeidos)
+
+      const filtro_grupos = gruposLeidos.filter(grupo =>
+        grupo.participantes?.some(p => p.uid === usuarioAutenticado?.uid)
+      );      
+
+      console.log("Grupos filtrado: ", filtro_grupos);
+
       // Actualizamos el estado 'grupos' con la nueva lista leída
-      setGrupos(gruposLeidos);
+      setGrupos(filtro_grupos);
       setLoading(false); // Terminamos de cargar
     }, (error) => {
       // Manejo básico de errores si la escucha falla

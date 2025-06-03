@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PantallaResumen from './screens_inicio/PantallaResumen';
 import PantallaDeudores from './screens_inicio/PantallaDeudores';
 import PantallaMovimientos from './screens_inicio/PantallaMovimientos';
-
+ 
 const Stack = createNativeStackNavigator();
 
 export default function Inicio() {

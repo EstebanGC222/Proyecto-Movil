@@ -1,11 +1,18 @@
-import React from 'react';
+import {React ,useState} from 'react';
 import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { GastosModal } from '../utils/gastos_rapidos';
+
+import { styles } from './../styles';
 
 export default function PantallaResumen({ navigation }) {
   const debes = 1000;
   const teDeben = 1500;
   const balance = teDeben - debes;
+
+  console.log("styles:", styles);
+
+  const [mostrar_modal, setModal] = useState(false);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -42,71 +49,18 @@ export default function PantallaResumen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.botonCircular}>
-          <Ionicons name="add" size={30} color="#fff" />
-        </TouchableOpacity>
+        <View style={styles.botonCircularL}>
+          <TouchableOpacity style={styles.botonCircular}>
+            <Ionicons name="add" size={30} color="#fff" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.botonCircularR} onPress={() => setModal(true)}>
+              <Ionicons name="add" size={30} color="#fff" />
+          </TouchableOpacity>
+
+          <GastosModal visible={mostrar_modal} onClose={() => setModal(false)} />
+        </View>
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  contenedor: {
-    flex: 1,
-    padding: 20,
-  },
-  titulo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    alignSelf: 'center',
-    marginTop: 50,
-  },
-  resumenValores: {
-    marginBottom: 30,
-  },
-  filaValor: {
-    flexDirection: 'row',
-    marginBottom: 10,
-    justifyContent: 'center',
-  },
-  etiqueta: {
-    fontSize: 18,
-    fontWeight: '500',
-  },
-  valor: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  seccionesParalelas: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 30,
-  },
-  seccionBoton: {
-    padding: 10,
-    backgroundColor: '#007bff',
-    borderRadius: 5,
-    width: '45%',
-    alignItems: 'center',
-  },
-  seccionTexto: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  botonCircular: {
-    position: 'absolute',
-    bottom: 30,
-    alignSelf: 'center',
-    backgroundColor: '#007bff',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

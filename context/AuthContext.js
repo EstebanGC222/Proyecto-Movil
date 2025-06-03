@@ -102,6 +102,9 @@ export const AuthProvider = ({ children }) => {
     try {
       const credencialUsuario = await signInWithEmailAndPassword(auth, email, password);
       console.log("AuthContext: Usuario inició sesión:", credencialUsuario.user.uid);
+
+      
+
       // onAuthStateChanged hará el resto
       return { exito: true, usuario: credencialUsuario.user };
     } catch (error) {

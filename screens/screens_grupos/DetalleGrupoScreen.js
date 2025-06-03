@@ -2,23 +2,82 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Text,
-    StyleSheet,
     ActivityIndicator,
     Alert,
     Button,
-    ScrollView
+    ScrollView,
+    TouchableOpacity,
+    Modal,
+    Image
 } from 'react-native';
-import { doc, onSnapshot, deleteDoc } from 'firebase/firestore';
-import { db } from '../../firebaseConfig'; 
+import { doc, onSnapshot, deleteDoc, addDoc, collection } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { Ionicons } from '@expo/vector-icons';
+
+import { GastosModal } from '../utils/gastos_rapidos';
+import { styles } from './../styles'
+
+import Constants from 'expo-constants';
+
+const CloudName =   Constants.expoConfig.Couldinary.CloudName;
+/* const CloudPreset = Constants.expoConfig.Couldinary.CloudPreset; */
+const CloudPresets =      Constants.expoConfig.Couldinary.CloudPresets;
+
+// Función para subir imagen a Firebase Storage
+async function subirImagenCloudinary(uri) {
+    const data = new FormData();
+
+    console.log("uri: ",uri);
+
+    data.append('file', {
+        uri,
+        name: 'foto.jpg',
+        type: 'image/jpeg',
+    });
+
+    data.append('upload_preset', CloudPresets);
+
+    console.log("data: ",data);
+
+    try {
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CloudName}/image/upload`, {
+            method: 'POST',
+            body: data,
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        console.log("res: ",res);
+
+        const result = await res.json();
+
+        console.log("restultado: ",result);
+
+        if (!res.ok) {
+            throw new Error(result.error?.message || 'Error al subir la imagen');
+        }
+
+        return result.secure_url;
+    } catch (error) {
+        console.error("Error subiendo a Cloudinary:", error);
+        throw error;
+    }
+}
 
 
 export default function DetalleGrupoScreen({ route, navigation }) {
+
+    console.log("name: ",CloudName);
+    console.log("Preset actualizado es: ",CloudPresets);
+
     // --- Estados ---
     const [grupo, setGrupo] = useState(null); // Contendrá { id, nombre, descripcion, Cantidad, creadorUid, participantes: [{uid, nombreParaMostrar}] }
     const [loading, setLoading] = useState(true); // Carga general de la pantalla
     const [error, setError] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
-
+    const [mostrar_modal, setModal] = useState(false);
+    const [gastos, setGasto] = useState('')
 
     const { grupoId } = route.params || {};
     const isMountedRef = useRef(true);
@@ -42,7 +101,7 @@ export default function DetalleGrupoScreen({ route, navigation }) {
         console.log(`DetalleGrupoScreen: Iniciando escucha para grupo ID: ${grupoId}`);
         const docRef = doc(db, "grupos", grupoId);
 
-        const unsubscribe = onSnapshot(docRef, (docSnap) => {
+        const unsubscribeGrupo = onSnapshot(docRef, (docSnap) => {
             if (!isMountedRef.current) {
                 console.log("DetalleGrupoScreen: Snapshot recibido pero componente desmontado.");
                 return;
@@ -68,10 +127,21 @@ export default function DetalleGrupoScreen({ route, navigation }) {
             }
         });
 
+        const gastosRef = collection(db, "grupos", grupoId, "gastos");
+        const unsubscribeGasto = onSnapshot(gastosRef, (snapshot) => {
+            const gastosData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setGasto(gastosData);
+            console.log("Gastos de la base de datos",gastosData);
+        }, (err) => {
+            console.error("Error al escuchar los gastos:", err);
+        });
+
+
         return () => {
             isMountedRef.current = false;
             console.log("DetalleGrupoScreen: Dejando de escuchar grupo (cleanup).");
-            unsubscribe();
+            unsubscribeGrupo();
+            unsubscribeGasto();
         };
     }, [grupoId]); // Solo depende de grupoId
 
@@ -111,6 +181,33 @@ export default function DetalleGrupoScreen({ route, navigation }) {
         );
     };
 
+    const handleAgregarGasto = async (gastoData) => {
+        try {
+            console.log("datos del gasto", gastoData);
+    
+            let fotoURL = null;
+    
+            // Solo sube imagen si se proporcionó una
+            if (gastoData.foto) {
+                fotoURL = await subirImagenCloudinary(gastoData.foto);
+            }
+    
+            await addDoc(collection(db, 'grupos', grupo.id, 'gastos'), {
+                nombre: gastoData.gasto,             // o descripcion
+                cantidad: Number(gastoData.valor),   // asegúrate de que sea número
+                fechaCreacion: new Date(),           // o gastoData.fecha si la eliges
+                fotoURL: fotoURL || null
+            });
+    
+            Alert.alert('Gasto agregado');
+    
+        } catch (err) {
+            console.error("Error agregando gasto:", err);
+            Alert.alert("Error", "No se pudo guardar el gasto.");
+        }
+    };
+    
+
     // --- Lógica de Renderizado ---
     if (loading) { // Simplificado: solo un estado de carga general
         return ( <View style={styles.centerContent}><ActivityIndicator size="large" color="#007bff" /><Text style={styles.loadingText}>Cargando detalles del grupo...</Text></View> );
@@ -126,7 +223,7 @@ export default function DetalleGrupoScreen({ route, navigation }) {
 
     // --- Renderizado de Detalles del Grupo ---
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <ScrollView /* style={styles.container} contentContainerStyle={styles.scrollContent} */>
             <Text style={styles.titulo}>{grupo.nombre}</Text>
             {grupo.descripcion ? (<Text style={styles.descripcion}>{grupo.descripcion}</Text>) : (<Text style={styles.descripcion}>Sin descripción.</Text>)}
 
@@ -169,101 +266,55 @@ export default function DetalleGrupoScreen({ route, navigation }) {
                 <View style={styles.botonWrapper}><Button title={isDeleting ? "Eliminando..." : "Eliminar Grupo"} onPress={handleEliminar} color="#dc3545" disabled={isDeleting}/></View>
                 {isDeleting && <ActivityIndicator size="small" color="#dc3545" style={{marginTop: 5, alignSelf: 'center'}}/>}
             </View>
+
+            <View style={styles.separador} />
+
+            <TouchableOpacity style={styles.botonCircular} onPress={() => setModal(true)}>
+                <Ionicons name="add" size={30} color="#fff" />
+            </TouchableOpacity>
+
+
+            <GastosModal visible={mostrar_modal} onClose={() => setModal(false)} onSubmit={handleAgregarGasto} />
+
+            <View>
+                <Text style={styles.label}>Gastos registrados:</Text>
+                
+                <View style={styles.separador} />
+
+                {gastos.length > 0 ? (
+                  gastos.map((gasto) => (
+                    <View key={gasto.id} style={styles.gastoItem}>
+                        <Text style={styles.descripcion}>
+                            {gasto.nombre}
+                        </Text>
+
+
+                        <Text style={styles.descripcion}>
+                            {new Intl.NumberFormat('es-CO', {
+                            style: 'currency',
+                            currency: 'COP',
+                            minimumFractionDigits: 0
+                            }).format(gasto.cantidad)}
+                        </Text>
+
+                        {gasto.fotoURL ? (
+                        
+                        <Image
+                          source={{ uri: gasto.fotoURL }}
+                          style={{ width: 50, height: 50, borderRadius: 5 }}
+                        />
+                        ) : null}
+
+                        <View style={styles.separador} />
+
+                    </View>
+                  ))
+                ) : (
+                  <Text style={styles.noParticipantes}>Aún no se han registrado gastos.</Text>
+                )}
+            </View>
+
+
         </ScrollView>
     );
 }
-
-// --- Estilos ---
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    scrollContent: {
-        paddingBottom: 30,
-        flexGrow: 1, 
-    },
-    centerContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    loadingText: {
-        marginTop: 10,
-        fontSize: 16,
-        color: '#6c757d',
-        marginLeft: 5,
-    },
-    errorText: {
-        fontSize: 16,
-        color: 'red',
-        textAlign: 'center',
-        marginBottom: 15,
-    },
-    titulo: {
-        fontSize: 28,
-        fontWeight: 'bold',
-        marginBottom: 15,
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        color: '#343a40',
-    },
-    descripcion: {
-        fontSize: 16,
-        marginBottom: 20,
-        paddingHorizontal: 20,
-        color: '#495057',
-        lineHeight: 22,
-    },
-    separador: {
-        height: 1,
-        backgroundColor: '#e0e0e0',
-        marginVertical: 15,
-        marginHorizontal: 20,
-    },
-    label: {
-        fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 10,
-        paddingHorizontal: 20,
-        color: '#343a40',
-    },
-    loadingParticipantesContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        paddingHorizontal: 20,
-        marginBottom: 10,
-        minHeight: 40,
-    },
-    participantesContainer: {
-        paddingHorizontal: 20,
-        marginBottom: 10,
-    },
-    participanteItem: {
-        fontSize: 16,
-        backgroundColor: '#f8f9fa',
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        marginBottom: 8,
-        borderRadius: 6,
-        color: '#343a40',
-        overflow: 'hidden',
-    },
-    noParticipantes: {
-        fontStyle: 'italic',
-        color: '#6c757d',
-        paddingHorizontal: 20,
-        marginBottom: 20,
-        textAlign: 'left',
-    },
-    botonesContainer: {
-        paddingHorizontal: 20,
-        paddingTop: 15,
-        paddingBottom: 20,
-    },
-    botonWrapper: {
-        marginBottom: 15,
-    },
-});
