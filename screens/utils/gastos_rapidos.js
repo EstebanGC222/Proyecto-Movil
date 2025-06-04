@@ -1,10 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { Modal, View, Text, Button, StyleSheet, TextInput, Image, Alert } from 'react-native';
+import { Modal, View, Text, Button, TextInput, Image, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 
+import { styles } from './../styles';
+
 import { MandarNotificacion } from './Notificaciones';
-import { PermisoNotificacionAsync } from './Notificaciones'
+import { PermisoNotificacionAsync } from './Notificaciones';
 
 export function GastosModal({ visible, onClose, onSubmit }) {
     const [permiso, pedirPermiso] = useCameraPermissions();
@@ -165,41 +167,3 @@ export function GastosModal({ visible, onClose, onSubmit }) {
     );
 }
 
-const styles = StyleSheet.create({
-    modalContainer: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    content: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
-        width: '90%',
-    },
-    title: {
-        fontSize: 18,
-        marginBottom: 10,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        padding: 10,
-        marginBottom: 10,
-        borderRadius: 5,
-    },
-    permisoContainer: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.8)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    permisoText: {
-        color: 'white',
-        fontSize: 18,
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-});

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
-import { style as styles } from './styles';
+import { styles } from './styles';
 
 export default function Configuracion({ navigation }) {
   const {

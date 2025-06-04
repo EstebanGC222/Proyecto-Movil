@@ -1,4 +1,3 @@
-import react from "react";
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
@@ -374,6 +373,371 @@ export const styles = StyleSheet.create({
   enlaceDeshabilitado: {
     color: 'grey'
   },
+  kavContainer:{
+          flex: 1,
+      },
+      scrollViewContainer: {
+          flex: 1,
+          backgroundColor: '#fff',
+      },
+      scrollViewContent: {
+          paddingHorizontal: 20,
+          paddingTop: 15,
+          paddingBottom: 30,
+          flexGrow: 1,
+      },
+      centerContent: { // Para el spinner de carga inicial
+          flexGrow: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20,
+      },
+      statusText: {
+          marginTop: 10,
+          fontSize: 16,
+          color: '#6c757d',
+      },
+      errorText: {
+          fontSize: 16,
+          color: 'red',
+          textAlign: 'center',
+          marginBottom: 15,
+      },
+      label: {
+          fontSize: 16,
+          fontWeight: 'bold',
+          marginBottom: 5,
+          marginTop: 15,
+          color: '#333',
+      },
+      input: {
+          borderWidth: 1,
+          borderColor: '#ccc',
+          borderRadius: 5,
+          paddingHorizontal: 15,
+          paddingVertical: Platform.OS === 'ios' ? 12 : 10,
+          fontSize: 16,
+          backgroundColor: '#f8f8f8',
+          marginBottom: 10,
+      },
+      textArea: {
+          height: 80,
+          textAlignVertical: 'top',
+      },
+      buttonContainer: {
+          marginTop: 15,
+          marginBottom: 20,
+      },
+      submitIndicator: {
+          marginTop: 10,
+          alignSelf: 'center',
+      },
+      seleccionadosContainer: {
+          marginTop: 15,
+          paddingTop: 10,
+          borderTopWidth: 1,
+          borderTopColor: '#eee',
+          marginBottom: 10,
+      },
+      seleccionadosLabel: {
+          fontWeight: 'bold',
+          marginBottom: 8,
+          color: '#555',
+          fontSize: 14,
+      },
+      seleccionadosWrapper:{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+      },
+      participanteSeleccionado: {
+          backgroundColor: '#007bff',
+          borderRadius: 15,
+          paddingVertical: 5,
+          paddingHorizontal: 12,
+          marginRight: 8,
+          marginBottom: 8,
+      },
+      participanteTexto: {
+          color: 'white',
+          fontSize: 14,
+      },
+      listaContactosScrollView: {
+          marginTop: 10,
+          borderTopWidth: 1,
+          borderTopColor: '#eee',
+          minHeight: 150,
+          // maxHeight: 300, 
+      },
+      contactoItem: {
+          paddingVertical: 10,
+          paddingHorizontal: 5,
+          borderBottomWidth: 1,
+          borderBottomColor: '#f0f0f0',
+      },
+      contactoSeleccionado: {
+          backgroundColor: '#e7f3ff',
+      },
+      contactoNombre: {
+          fontSize: 16,
+      },
+      contactoNumero: { 
+          fontSize: 13,
+          color: 'grey',
+          marginTop: 2,
+      },
+      emptyListContainer:{
+        paddingVertical: 20,
+        alignItems: 'center',
+      },
+      placeholderText: {
+          color: '#6c757d',
+          fontSize: 15,
+          textAlign: 'center',
+      },
+      permisoInfo:{
+          fontStyle: 'italic',
+          fontSize: 13,
+          color: '#6c757d',
+          textAlign: 'center',
+          paddingVertical: 10,
+      },
+      contenedorCentradoPermisoDenegado: { 
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20,
+          minHeight: 100,
+          marginBottom: 20,
+        },
+        scrollViewContainer: {
+          flex: 1,
+          backgroundColor: '#fff',
+      },
+      scrollViewContent: {
+          paddingHorizontal: 20,
+          paddingTop: 15,
+          paddingBottom: 30,
+          flexGrow: 1,
+      },
+      mainContent:{
+      },
+      contenedorCentrado: {
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20,
+    
+      },
+      contenedorCentradoPermisoDenegado: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+        minHeight: 100,
+        marginBottom: 20,
+      },
+      statusText: {
+          marginTop: 10,
+          fontSize: 16,
+          color: '#6c757d',
+          textAlign: 'center',
+      },
+      label: {
+          fontSize: 16,
+          fontWeight: 'bold',
+          marginBottom: 5,
+          marginTop: 15,
+          color: '#333',
+      },
+      input: {
+          borderWidth: 1,
+          borderColor: '#ccc',
+          borderRadius: 5,
+          paddingHorizontal: 15,
+          paddingVertical: Platform.OS === 'ios' ? 12 : 10,
+          fontSize: 16,
+          backgroundColor: '#f8f8f8',
+          marginBottom: 10,
+      },
+      textArea: {
+          height: 80,
+          textAlignVertical: 'top',
+      },
+      buttonContainer: {
+          marginTop: 10,
+          marginBottom: 15,
+      },
+      seleccionadosContainer: {
+          marginTop: 15,
+          paddingTop: 10,
+          borderTopWidth: 1,
+          borderTopColor: '#eee',
+          marginBottom: 10,
+      },
+      seleccionadosLabel: {
+          fontWeight: 'bold',
+          marginBottom: 8,
+          color: '#555',
+          fontSize: 14,
+      },
+      seleccionadosWrapper: {
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+      },
+      participanteSeleccionado: {
+          backgroundColor: '#007bff',
+          borderRadius: 15,
+          paddingVertical: 5,
+          paddingHorizontal: 12,
+          marginRight: 8,
+          marginBottom: 8,
+      },
+      participanteTexto: {
+          color: 'white',
+          fontSize: 14,
+      },
+      listaContactosScrollView: {
+          marginTop: 10,
+          borderTopWidth: 1,
+          borderTopColor: '#eee',
+          minHeight: 150,
+      },
+      contactoItem: {
+          paddingVertical: 10,
+          paddingHorizontal: 5,
+          borderBottomWidth: 1,
+          borderBottomColor: '#f0f0f0',
+      },
+      contactoSeleccionado: {
+          backgroundColor: '#e7f3ff',
+      },
+      contactoNombre: {
+          fontSize: 16,
+      },
+      contactoNumero: {
+          fontSize: 13,
+          color: 'grey',
+          marginTop: 2,
+      },
+      emptyListContainer: {
+          paddingVertical: 30,
+          alignItems: 'center',
+      },
+      placeholderText: {
+          color: '#6c757d',
+          fontSize: 15,
+          textAlign: 'center',
+      },
+      indicadorBoton: {
+        marginTop: 10,
+      },
+      kavContainer: {
+        flex: 1,
+      },
+      scrollContainer: {
+        flexGrow: 1,
+        justifyContent: 'center', // Centra el contenido del ScrollView
+      },
+      container: {
+        // flex: 1, // No es necesario si scrollContainer tiene flexGrow y justifyContent
+        padding: 20,
+        backgroundColor: '#f8f9fa',
+      },
+      titulo: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        marginBottom: 30,
+        color: '#343a40',
+      },
+      input: {
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#ced4da',
+        borderRadius: 8,
+        padding: 15,
+        marginBottom: 15,
+        fontSize: 16,
+      },
+      spinner: {
+        marginVertical: 10,
+        height: 40, // Para que ocupe un espacio similar al botón
+        alignSelf: 'center',
+      },
+      enlace: {
+        marginTop: 20,
+        color: '#007bff',
+        textAlign: 'center',
+        fontSize: 16,
+      },
+      enlaceDeshabilitado: {
+        color: 'grey',
+      },
+      container: {
+        flex: 1,
+        backgroundColor: '#f8f9fa',
+      },
+      scrollContent: {
+        flexGrow: 1,
+        paddingBottom: 20,
+      },
+      contenedorCentrado: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+        padding: 20,
+        textAlign: 'center',
+      },
+      errorText: {
+        textAlign: 'center',
+        color: 'red',
+        marginBottom: 10,
+      },
+      titulo: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        paddingVertical: 20,
+        color: '#343a40',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
+        marginBottom: 10,
+      },
+      seccion: {
+        backgroundColor: '#fff',
+        paddingHorizontal: 20,
+        paddingVertical: 20,
+        marginHorizontal: 15,
+        borderRadius: 8,
+        marginBottom: 15,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1, },
+        shadowOpacity: 0.18,
+        shadowRadius: 1.00,
+        elevation: 1,
+        marginTop: 20,
+      },
+      seccionEspaciada: {
+        marginHorizontal: 15,
+        marginTop: 20,
+      },
+      label: {
+        fontSize: 16,
+        color: '#495057',
+        marginBottom: 8,
+        fontWeight: '500',
+      },
+      subLabel: { // Nuevo estilo para el texto de ayuda
+          fontSize: 13,
+          color: '#6c757d',
+          marginBottom: 10,
+          fontStyle: 'italic',
+      },
+      input: {
+        borderWidth: 1,
+        borderColor: '#ced4da',
+        borderRadius: 5,
+        padding: 12,
+        fontSize: 16,
+        marginBottom: 15,
+    backgroundColor: '#fff',
+      }
 });
-
-console.log("estoy en style: ", styles);

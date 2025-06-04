@@ -182,6 +182,9 @@ export default function DetalleGrupoScreen({ route, navigation }) {
     };
 
     const handleAgregarGasto = async (gastoData) => {
+
+        
+
         try {
             console.log("datos del gasto", gastoData);
     

@@ -6,6 +6,7 @@ import {
   Platform, Alert, ScrollView
 } from 'react-native';
 import { useAuth } from '../../context/AuthContext'; // Ajusta la RUTA
+import { styles } from '../styles';
 
 export default function RegistroScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -115,49 +116,3 @@ export default function RegistroScreen({ navigation }) {
     </KeyboardAvoidingView>
   );
 }
-
-// Estilos (similares a LoginScreen, puedes refactorizar a un archivo de estilos comunes si quieres)
-const styles = StyleSheet.create({
-  kavContainer: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center', // Centra el contenido del ScrollView
-  },
-  container: {
-    // flex: 1, // No es necesario si scrollContainer tiene flexGrow y justifyContent
-    padding: 20,
-    backgroundColor: '#f8f9fa',
-  },
-  titulo: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 30,
-    color: '#343a40',
-  },
-  input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ced4da',
-    borderRadius: 8,
-    padding: 15,
-    marginBottom: 15,
-    fontSize: 16,
-  },
-  spinner: {
-    marginVertical: 10,
-    height: 40, // Para que ocupe un espacio similar al botón
-    alignSelf: 'center',
-  },
-  enlace: {
-    marginTop: 20,
-    color: '#007bff',
-    textAlign: 'center',
-    fontSize: 16,
-  },
-  enlaceDeshabilitado: {
-    color: 'grey',
-  }
-});
