@@ -1,6 +1,10 @@
 import { Platform, StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,               // Ocupa toda la pantalla y respeta el área segura (notch, barra)
+    backgroundColor: '#fff',
+  },
   contenedorCentrado: {
     flex: 1,
     justifyContent: 'center',
@@ -8,9 +12,19 @@ export const styles = StyleSheet.create({
   },
   contenedor: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',   
     padding: 20,
+    backgroundColor: '#fff',
+  },
+  scrollContenedor:{
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
   },
   scrollContent: {
+    flexGrow: 1,
+    alignItems: 'center',
     paddingVertical: 20,
   },
   seccion: {
@@ -21,8 +35,10 @@ export const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 4,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+    textAlign: 'left',
   },
   subLabel: {
     fontSize: 14,
@@ -32,34 +48,28 @@ export const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 10,
     fontSize: 16,
-    marginBottom: 10,
+    backgroundColor: '#fafafa',
+    marginBottom: 15,
   },
   errorText: {
-    color: 'red',
+    fontSize: 16,
+    color: '#dc3545',
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 15,
   },
   indicadorGuardado: {
     marginTop: 10,
   },
-    safeArea: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-  },
-  contenedor: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
   titulo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#007bff',
+    marginBottom: 25,
+    textAlign: 'center',
   },
   resumenValores: {
     marginBottom: 30,
@@ -92,138 +102,33 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
   },
   seccionTexto: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  botonCircularL: {
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-    flexDirection: 'row',
-    gap: 15,
-  },
-  botonCircular: {
-    backgroundColor: '#28a745',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 15,
-    elevation: 5, // sombra para Android
-    shadowColor: '#000', // sombra para iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  botonCircularR: {
-    backgroundColor: '#007bff',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 5, // sombra para Android
-    shadowColor: '#000', // sombra para iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#f9f9f9',
-  },
-  contenedor: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  titulo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#333',
-  },
-  resumenValores: {
-    marginBottom: 30,
-  },
-  filaValor: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 6,
-  },
-  etiqueta: {
-    fontSize: 18,
-    color: '#555',
-  },
-  valor: {
-    fontSize: 18,
-    fontWeight: '600',
     color: '#000',
-  },
-  seccionesParalelas: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 40,
-  },
-  seccionBoton: {
-    flex: 1,
-    backgroundColor: '#007bff',
-    paddingVertical: 14,
-    marginHorizontal: 5,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  seccionTexto: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },
-  botonCircularL: {
-    position: 'absolute',
-    bottom: 30,
-    right: 30,
-    flexDirection: 'row',
-    gap: 15,
-  },
   botonCircular: {
-    backgroundColor: '#28a745',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 15,
-    elevation: 5, // sombra para Android
-    shadowColor: '#000', // sombra para iOS
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  botonCircularR: {
     backgroundColor: '#007bff',
     width: 60,
     height: 60,
     borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    elevation: 5, // sombra para Android
-    shadowColor: '#000', // sombra para iOS
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+  
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
   },
+  
   contenedorPrincipal: {
     flex: 1,
     backgroundColor: '#fff',
     paddingHorizontal: 20,
     paddingTop: 15,
-  },
-  contenedorCentrado: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   textoVacio: {
     fontSize: 18,
@@ -260,8 +165,8 @@ export const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 5, // sombra Android
-    shadowColor: '#000', // sombra iOS
+    elevation: 5,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
@@ -282,31 +187,11 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: '#007bff',
   },
-  errorText: {
-    fontSize: 16,
-    color: '#dc3545',
-    textAlign: 'center',
-    marginBottom: 15,
-  },
-  titulo: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    marginVertical: 15,
-    textAlign: 'center',
-    color: '#222',
-  },
   descripcion: {
     fontSize: 16,
     color: '#444',
     marginBottom: 12,
     textAlign: 'center',
-  },
-  label: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 8,
-    color: '#333',
-    textAlign: 'left',
   },
   separador: {
     height: 1,
@@ -336,21 +221,6 @@ export const styles = StyleSheet.create({
     flex: 1,
     marginHorizontal: 5,
   },
-  botonCircular: {
-    backgroundColor: '#007bff',
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    marginBottom: 20,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-  },
   gastoItem: {
     backgroundColor: '#f9f9f9',
     padding: 12,
@@ -360,49 +230,37 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  centerContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
   statusText: {
     marginTop: 10,
     fontSize: 16,
     color: '#007bff',
     textAlign: 'center',
   },
-  errorText: {
-    fontSize: 16,
-    color: '#dc3545',
-    textAlign: 'center',
-    marginBottom: 15,
-  },
   kavContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    justifyContent: 'center',  // Centra verticalmente
+    backgroundColor: '#f0f4f8', // o el color que quieras
+    paddingHorizontal: 20,
   },
+  AuthContainer: {
+    backgroundColor: '#fff',
+    padding: 25,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+    // Puedes controlar el ancho si quieres, por ejemplo:
+    width: '100%',
+    maxWidth: 400,
+    // No uses alignSelf ni alignItems aquí para no afectar horizontal
+  },  
   scrollViewContainer: {
     paddingHorizontal: 20,
   },
   scrollViewContent: {
     paddingBottom: 40,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginTop: 15,
-    marginBottom: 5,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 6,
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === 'ios' ? 12 : 8,
-    fontSize: 16,
-    backgroundColor: '#fff',
   },
   textArea: {
     height: 90,
@@ -482,7 +340,7 @@ export const styles = StyleSheet.create({
   },
   ModalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)', // Fondo semitransparente
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -496,7 +354,7 @@ export const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5, // para Android
+    elevation: 5,
   },
   Modaltitle: {
     fontSize: 20,
@@ -515,38 +373,6 @@ export const styles = StyleSheet.create({
     marginBottom: 15,
     backgroundColor: '#fafafa',
   },
-  kavContainer: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  container: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 25,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  titulo: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#007bff',
-    marginBottom: 25,
-    textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
-    marginBottom: 20,
-    backgroundColor: '#fafafa',
-  },
   spinner: {
     marginVertical: 20,
   },
@@ -559,52 +385,49 @@ export const styles = StyleSheet.create({
   enlaceDeshabilitado: {
     color: '#a0a0a0',
   },
-  kavContainer: {
-    flex: 1,
-    backgroundColor: '#f0f4f8',
-  },
-  scrollContainer: {
-    flexGrow: 1,
+  botonCircularDetalles:{
+    backgroundColor: '#007bff',
+    width: 30,
+    height: 30,
+    borderRadius: 30,
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 30,
-  },
-  container: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 25,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
     elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
-  titulo: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#007bff',
-    marginBottom: 25,
-    textAlign: 'center',
+  contenedorGastos:{
+    flex:1,
+    backgroundColor:'green',
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 16,
+  grupoInfo: {
+    width: 350,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 20,
     marginBottom: 20,
-    backgroundColor: '#fafafa',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  spinner: {
-    marginVertical: 20,
+  gastoItem: {
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    paddingBottom: 10,
   },
-  enlace: {
-    marginTop: 15,
-    color: '#007bff',
-    textAlign: 'center',
-    fontWeight: '600',
-  },
-  enlaceDeshabilitado: {
-    color: '#a0a0a0',
+  contenedorGastos: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 30,
+    width: '100%',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
   },
 });

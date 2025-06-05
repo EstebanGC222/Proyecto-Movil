@@ -62,11 +62,7 @@ export default function RegistroScreen({ navigation }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.kavContainer}
     >
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        keyboardShouldPersistTaps="handled" // Ayuda con los taps dentro del ScrollView
-      >
-        <View style={styles.container}>
+        <View style={styles.AuthContainer}>
           <Text style={styles.titulo}>Crear Cuenta</Text>
 
           <TextInput
@@ -112,7 +108,6 @@ export default function RegistroScreen({ navigation }) {
             </Text>
           </TouchableOpacity>
         </View>
-      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

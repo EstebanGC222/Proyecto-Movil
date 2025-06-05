@@ -226,40 +226,43 @@ export default function DetalleGrupoScreen({ route, navigation }) {
 
     // --- Renderizado de Detalles del Grupo ---
     return (
-        <ScrollView /* style={styles.container} contentContainerStyle={styles.scrollContent} */>
-            <Text style={styles.titulo}>{grupo.nombre}</Text>
-            {grupo.descripcion ? (<Text style={styles.descripcion}>{grupo.descripcion}</Text>) : (<Text style={styles.descripcion}>Sin descripción.</Text>)}
+        <ScrollView style={styles.scrollContenedor} contentContainerStyle={styles.scrollContent}>
+            <View style={styles.grupoInfo}>
+                <Text style={styles.titulo}>{grupo.nombre}</Text>
+                {grupo.descripcion ? (<Text style={styles.descripcion}>{grupo.descripcion}</Text>) : (<Text style={styles.descripcion}>Sin descripción.</Text>)}
 
-            {/* Mostrar Cantidad (sin cambios en esta parte) */}
-            {typeof grupo.Cantidad === 'number' ? (
-                <>
-                    <Text style={styles.label}>Valor ingresado</Text>
-                    <Text style={styles.descripcion}>
-                        {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(grupo.Cantidad)}
-                    </Text>
-                </>
-            ) : (
-                 grupo.Cantidad !== undefined && grupo.Cantidad !== null ?
-                    <Text style={styles.descripcion}>Valor: {String(grupo.Cantidad)} (Formato no numérico)</Text> :
-                    <Text style={styles.descripcion}>Cantidad no especificada.</Text>
-            )}
-
-            <View style={styles.separador} />
-
-            {/* Mostrar Participantes directamente desde grupo.participantes */}
-            <Text style={styles.label}>Participantes ({grupo.participantes?.length || 0}):</Text>
-            {grupo.participantes && grupo.participantes.length > 0 ? (
-                <View style={styles.participantesContainer}>
-                    {/* Ahora grupo.participantes es [{ uid, nombreParaMostrar }] */}
-                    {grupo.participantes.map((participante) => (
-                        <Text key={participante.uid} style={styles.participanteItem}>
-                            {participante.nombreParaMostrar || `Usuario (ID: ${participante.uid.substring(0,5)}...)`}
+                {/* Mostrar Cantidad (sin cambios en esta parte) */}
+                {typeof grupo.Cantidad === 'number' ? (
+                    <>
+                        <Text style={styles.label}>Valor ingresado</Text>
+                        <Text style={styles.descripcion}>
+                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(grupo.Cantidad)}
                         </Text>
-                    ))}
-                </View>
-            ) : (
-                 <Text style={styles.noParticipantes}>No hay participantes asignados a este grupo.</Text>
-            )}
+                    </>
+                ) : (
+                     grupo.Cantidad !== undefined && grupo.Cantidad !== null ?
+                        <Text style={styles.descripcion}>Valor: {String(grupo.Cantidad)} (Formato no numérico)</Text> :
+                        <Text style={styles.descripcion}>Cantidad no especificada.</Text>
+                )}
+            
+
+                <View style={styles.separador} />
+
+                {/* Mostrar Participantes directamente desde grupo.participantes */}
+                <Text style={styles.label}>Participantes ({grupo.participantes?.length || 0}):</Text>
+                {grupo.participantes && grupo.participantes.length > 0 ? (
+                    <View style={styles.participantesContainer}>
+                        {/* Ahora grupo.participantes es [{ uid, nombreParaMostrar }] */}
+                        {grupo.participantes.map((participante) => (
+                            <Text key={participante.uid} style={styles.participanteItem}>
+                                {participante.nombreParaMostrar || `Usuario (ID: ${participante.uid.substring(0,5)}...)`}
+                            </Text>
+                        ))}
+                    </View>
+                ) : (
+                     <Text style={styles.noParticipantes}>No hay participantes asignados a este grupo.</Text>
+                )}
+            </View>
 
             <View style={styles.separador} />
 
@@ -271,17 +274,17 @@ export default function DetalleGrupoScreen({ route, navigation }) {
             </View>
 
             <View style={styles.separador} />
-
-            <TouchableOpacity style={styles.botonCircular} onPress={() => setModal(true)}>
-                <Ionicons name="add" size={30} color="#fff" />
-            </TouchableOpacity>
-
+            
 
             <GastosModal visible={mostrar_modal} onClose={() => setModal(false)} onSubmit={handleAgregarGasto} />
+            
+            <View style={styles.contenedorGastos}>
+                <Text style={styles.label}>Gastos registrados: </Text>
 
-            <View>
-                <Text style={styles.label}>Gastos registrados:</Text>
-                
+                <TouchableOpacity style={styles.botonCircularDetalles} onPress={() => setModal(true)}>
+                        <Ionicons name="add" size={20} color="#fff" />
+                </TouchableOpacity>
+
                 <View style={styles.separador} />
 
                 {gastos.length > 0 ? (

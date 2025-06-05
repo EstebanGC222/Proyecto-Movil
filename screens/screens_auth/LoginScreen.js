@@ -47,7 +47,7 @@ export default function LoginScreen({ navigation }) {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       style={styles.kavContainer}
     >
-      <View style={styles.container}>
+      <View style={styles.AuthContainer}>
         <Text style={styles.titulo}>Iniciar Sesión</Text>
 
         <TextInput

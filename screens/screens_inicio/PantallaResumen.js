@@ -47,17 +47,11 @@ export default function PantallaResumen({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.botonCircularL}>
-          <TouchableOpacity style={styles.botonCircular}>
-            <Ionicons name="add" size={30} color="#fff" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.botonCircularR} onPress={() => setModal(true)}>
+          <TouchableOpacity style={styles.botonCircular} onPress={() => setModal(true)}>
               <Ionicons name="add" size={30} color="#fff" />
           </TouchableOpacity>
 
           <GastosModal visible={mostrar_modal} onClose={() => setModal(false)} />
-        </View>
       </View>
     </SafeAreaView>
   );

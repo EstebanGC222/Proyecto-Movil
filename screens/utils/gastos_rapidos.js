@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Modal, View, Text, Button, TextInput, Image, Alert, Platform } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
-import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
 
 import { styles } from './../styles';
 
@@ -23,44 +21,54 @@ export function GastosModal({ visible, onClose, onSubmit }) {
 
   useEffect(() => {
     if (visible) {
-      // Pedir permiso de cámara
-      (async () => {
-        const { granted } = await pedirPermiso();
-        if (!granted) {
-          Alert.alert("Permiso de cámara denegado", "La app necesita acceso a la cámara para tomar fotos.");
-        }
-      })();
+      const pedirTodosLosPermisos = async () => {
+        console.log("Solicitando permisos...");
   
-      // Pedir permiso de notificaciones
-      PermisoNotificacionAsync()
-        .then(token => {
+        // Cámara
+        const { granted: camaraOk } = await pedirPermiso();
+        if (!camaraOk) {
+          Alert.alert("Permiso de cámara denegado", "Necesitas permitir acceso a la cámara.");
+          return;
+        }
+  
+        // Galería
+        const { granted: galeriaOk } = await MediaLibrary.requestPermissionsAsync();
+        if (!galeriaOk) {
+          Alert.alert("Permiso de galería denegado", "Necesitas permitir acceso a la galería.");
+          return;
+        }
+  
+        // Notificaciones
+        try {
+          const token = await PermisoNotificacionAsync();
           if (token) setPushToken(token);
-        })
-        .catch(err => {
-          console.log('Error pidiendo permiso de notificaciones:', err);
-        });
+        } catch (err) {
+          console.log(' Error pidiendo permiso de notificaciones:', err);
+        }
+      };
+  
+      pedirTodosLosPermisos();
     }
   }, [visible]);
-
-  // ... el resto de funciones sin cambios
+  
 
   const cambiar_camara = () => {
     setVistaCamara(prev => (prev === 'back' ? 'front' : 'back'));
   };
 
   const tomarFoto = async () => {
+    console.log("tomando foto");
     if (camaraRef.current) {
       const foto = await camaraRef.current.takePictureAsync();
-      await MediaLibrary.saveToLibraryAsync(foto.uri);
+
+      console.log("foto tomdad: ",foto);
+
+      const assets = await MediaLibrary.saveToLibraryAsync(foto.uri);
+
+      console.log("assets: ", assets);
+
       setFotoTomada(foto.uri);
       setMostrarCamara(false);
-    }
-  };
-
-  const solicitarPermiso = async () => {
-    const { granted } = await pedirPermiso();
-    if (!granted) {
-      alert("Permiso de cámara denegado");
     }
   };
 

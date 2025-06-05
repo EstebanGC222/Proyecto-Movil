@@ -89,7 +89,7 @@ export default function Configuracion({ navigation }) {
   // Esto indica un problema al cargar el perfil o que el usuario realmente no tiene uno (raro si el registro lo crea).
   if (!cargandoPerfil && !perfilUsuarioActual) {
     return (
-      <View style={styles.contenidoCentrado}>
+      <View style={styles.contenedorCentrado}>
           <Text style={styles.errorText}>No se pudo cargar la información de tu perfil.</Text>
           <Text style={styles.errorText}>Intenta cerrar sesión y volver a iniciar.</Text>
         <View style={{ marginTop: 20 }}>
@@ -105,7 +105,7 @@ export default function Configuracion({ navigation }) {
   if (!perfilUsuarioActual) {
     // Este es un fallback muy defensivo.
     return (
-        <View style={styles.contenidoCentrado}>
+        <View style={styles.contenedorCentrado}>
             <Text>Cargando...</Text>
             <ActivityIndicator size="large" />
         </View>
@@ -119,7 +119,7 @@ export default function Configuracion({ navigation }) {
   const numeroHaCambiado = numeroActualGuardado !== numeroInputNormalizado;
 
   return (
-    <ScrollView style={styles.contendor} contentContainerStyle={styles.scrollcontent}>
+    <ScrollView style={styles.scrollContenedor} contentContainerStyle={styles.scrollContent}>
       
       <View style={styles.seccion}>
         <Text style={styles.label}>Tu Número de Teléfono:</Text>
