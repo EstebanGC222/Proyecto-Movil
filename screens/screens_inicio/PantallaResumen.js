@@ -10,8 +10,6 @@ export default function PantallaResumen({ navigation }) {
   const teDeben = 1500;
   const balance = teDeben - debes;
 
-  console.log("styles:", styles);
-
   const [mostrar_modal, setModal] = useState(false);
 
   return (

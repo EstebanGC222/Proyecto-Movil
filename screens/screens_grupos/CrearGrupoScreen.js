@@ -12,7 +12,6 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
-  Platform,
   Keyboard
 } from 'react-native';
 import { collection, addDoc, serverTimestamp, getDocs } from 'firebase/firestore';

@@ -1,6 +1,6 @@
 // En screens/Configuracion.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ActivityIndicator, ScrollView } from 'react-native';
+import { View, Text, TextInput, Button, Alert, ActivityIndicator, ScrollView } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
 import { styles } from './styles';
@@ -77,7 +77,7 @@ export default function Configuracion({ navigation }) {
   // `!guardandoNumero` es para no mostrar este spinner si ya estamos en el proceso de "Guardar Número".
   if (cargandoPerfil && !perfilUsuarioActual && !guardandoNumero) {
     return (
-      <View style={styles.contenedorCentrado}>
+      <View style={styles.contenidoCentrado}>
         <ActivityIndicator size="large" color="#007bff" />
         <Text>Cargando tu información de perfil...</Text>
       </View>
@@ -89,9 +89,9 @@ export default function Configuracion({ navigation }) {
   // Esto indica un problema al cargar el perfil o que el usuario realmente no tiene uno (raro si el registro lo crea).
   if (!cargandoPerfil && !perfilUsuarioActual) {
     return (
-      <View style={styles.contenedorCentrado}>
-        <Text style={styles.errorText}>No se pudo cargar la información de tu perfil.</Text>
-        <Text style={styles.errorText}>Intenta cerrar sesión y volver a iniciar.</Text>
+      <View style={styles.contenidoCentrado}>
+          <Text style={styles.errorText}>No se pudo cargar la información de tu perfil.</Text>
+          <Text style={styles.errorText}>Intenta cerrar sesión y volver a iniciar.</Text>
         <View style={{ marginTop: 20 }}>
           <Button title="Cerrar Sesión" onPress={handleCerrarSesion} color="#dc3545" />
         </View>
@@ -105,7 +105,7 @@ export default function Configuracion({ navigation }) {
   if (!perfilUsuarioActual) {
     // Este es un fallback muy defensivo.
     return (
-        <View style={styles.contenedorCentrado}>
+        <View style={styles.contenidoCentrado}>
             <Text>Cargando...</Text>
             <ActivityIndicator size="large" />
         </View>
@@ -119,9 +119,8 @@ export default function Configuracion({ navigation }) {
   const numeroHaCambiado = numeroActualGuardado !== numeroInputNormalizado;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <ScrollView style={styles.contendor} contentContainerStyle={styles.scrollcontent}>
       
-
       <View style={styles.seccion}>
         <Text style={styles.label}>Tu Número de Teléfono:</Text>
         <Text style={styles.subLabel}>
