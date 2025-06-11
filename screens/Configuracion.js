@@ -10,8 +10,8 @@ export default function Configuracion({ navigation }) {
     perfilUsuarioActual,
     cerrarSesion,
     actualizarNumeroTelefonoUsuario,
-    cargandoPerfil, // Lo usaremos para una mejor UI de carga
-    usuarioAutenticado // Lo usaremos para el uid
+    cargandoPerfil,
+    usuarioAutenticado // para el uid
   } = useAuth();
 
   const [inputNumeroTelefono, setInputNumeroTelefono] = useState('');
@@ -51,7 +51,6 @@ export default function Configuracion({ navigation }) {
   };
 
   const handleCerrarSesion = async () => {
-    // ... (código igual que antes)
     Alert.alert(
         "Cerrar Sesión",
         "¿Estás seguro de que quieres cerrar sesión?",
@@ -69,7 +68,7 @@ export default function Configuracion({ navigation }) {
       );
   };
 
-  // --- Lógica de Renderizado Mejorada ---
+  // --- Lógica de Renderizado ---
 
   // Caso 1: El perfil todavía se está cargando (después de que la auth inicial terminó)
   // `cargandoPerfil` se activa en AuthContext al llamar a `obtenerPerfilUsuario`.
@@ -99,11 +98,8 @@ export default function Configuracion({ navigation }) {
     );
   }
 
-  // Si llegamos aquí, perfilUsuarioActual DEBERÍA existir.
-  // Pero añadimos una comprobación final por si acaso, aunque en teoría no debería ser necesaria
-  // si la lógica de arriba y en AppNavigator es correcta.
+  // perfilUsuarioActual DEBERÍA existir.
   if (!perfilUsuarioActual) {
-    // Este es un fallback muy defensivo.
     return (
         <View style={styles.contenedorCentrado}>
             <Text>Cargando...</Text>
@@ -147,11 +143,6 @@ export default function Configuracion({ navigation }) {
           title="Cerrar Sesión"
           onPress={handleCerrarSesion}
           color="#dc3545"
-        />
-
-        <Button 
-          title='Cambio de tema' 
-          onPress={()=>{}}
         />
       </View>
     </ScrollView>

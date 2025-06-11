@@ -32,7 +32,6 @@ export default function CrearGrupoScreen({ navigation }) {
   const [cargandoContactosTelefono, setCargandoContactosTelefono] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cantidad, setCantidad] = useState('');
 
   const [usuariosRegistrados, setUsuariosRegistrados] = useState([]);
   const [cargandoUsuarios, setCargandoUsuarios] = useState(true);
@@ -157,12 +156,6 @@ export default function CrearGrupoScreen({ navigation }) {
       Alert.alert("Error", "El nombre del grupo no puede estar vacío.");
       return;
     }
-    const cantidadLimpia = String(cantidad).replace(/\./g, '');
-    const cantidadNumerica = Number(cantidadLimpia);
-    if (String(cantidad).trim() === '' || isNaN(cantidadNumerica) || cantidadNumerica <= 0) {
-      Alert.alert("Error", "La cantidad debe ser un número válido y mayor que cero.");
-      return;
-    }
 
     let participantesFinales = [...participantesSeleccionados]; // Copia de [{uid, nombreParaMostrar}]
 
@@ -193,7 +186,6 @@ export default function CrearGrupoScreen({ navigation }) {
         nombre: nombreGrupo.trim(),
         descripcion: descripcionGrupo.trim(),
         participantes: participantesFinales, // GUARDA EL ARRAY DE OBJETOS
-        Cantidad: cantidadNumerica,
         fechaCreacion: serverTimestamp(),
         creadorUid: usuarioAutenticado.uid, // UID del creador
       };
@@ -212,7 +204,6 @@ export default function CrearGrupoScreen({ navigation }) {
     nombreGrupo,
     descripcionGrupo,
     participantesSeleccionados,
-    cantidad,
     navigation,
     usuarioAutenticado, // Solo para uid y asegurar inclusión
     // Ya no se necesita perfilUsuarioActual ni contactosDelTelefono aquí si el nombre del creador es "Tú"
@@ -300,18 +291,6 @@ export default function CrearGrupoScreen({ navigation }) {
             multiline
            />
 
-          <Text style={styles.label}>Ingrese una cantidad</Text>
-          <TextInput
-            value={cantidad.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')}
-            onChangeText={(text) => {
-              const numericValue = text.replace(/[^0-9]/g, '');
-              setCantidad(numericValue);
-            }}
-            placeholder="Cantidad"
-            keyboardType="number-pad"
-            style={styles.input}
-          />
-
           <View style={styles.buttonContainer}>
               <Button
                 title={isSubmitting ? "Creando..." : "Crear Grupo"}
@@ -320,7 +299,6 @@ export default function CrearGrupoScreen({ navigation }) {
                     !nombreGrupo.trim() ||
                     // participantesSeleccionados.length === 0 || // Ya no se necesita si el creador se añade siempre
                     isSubmitting ||
-                    !String(cantidad).trim() || // Convertir a string antes de trim por si es 0
                     cargandoUsuarios ||
                     cargandoContactosTelefono
                 }

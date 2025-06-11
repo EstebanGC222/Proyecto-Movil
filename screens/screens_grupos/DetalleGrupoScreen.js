@@ -10,7 +10,7 @@ import {
     Modal,
     Image
 } from 'react-native';
-import { doc, onSnapshot, deleteDoc, addDoc, collection } from 'firebase/firestore';
+import { doc, onSnapshot, deleteDoc, addDoc, collection, increment, updateDoc, getDocs, writeBatch } from 'firebase/firestore'; // Añadir getDocs y writeBatch
 import { db } from '../../firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -18,13 +18,15 @@ import { GastosModal } from '../utils/gastos_rapidos';
 import { styles } from './../styles'
 
 import Constants from 'expo-constants';
+import { useAuth } from './../../context/AuthContext';
 
-const CloudName =   Constants.expoConfig.Couldinary.CloudName;
-/* const CloudPreset = Constants.expoConfig.Couldinary.CloudPreset; */
-const CloudPresets =      Constants.expoConfig.Couldinary.CloudPresets;
+
+const CloudName = Constants.expoConfig.Couldinary.CloudName;
+const CloudPresets = Constants.expoConfig.Couldinary.CloudPresets;
 
 // Función para subir imagen a Firebase Storage
 async function subirImagenCloudinary(uri) {
+    
     const data = new FormData();
 
     console.log("uri: ",uri);
@@ -65,9 +67,10 @@ async function subirImagenCloudinary(uri) {
     }
 }
 
-
 export default function DetalleGrupoScreen({ route, navigation }) {
 
+    const { usuarioAutenticado } = useAuth();
+    
     console.log("name: ",CloudName);
     console.log("Preset actualizado es: ",CloudPresets);
 
@@ -77,7 +80,8 @@ export default function DetalleGrupoScreen({ route, navigation }) {
     const [error, setError] = useState(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [mostrar_modal, setModal] = useState(false);
-    const [gastos, setGasto] = useState('')
+    const [gastos, setGasto] = useState('');
+    const [totalGastos, setTotalGastos] = useState(0);
 
     const { grupoId } = route.params || {};
     const isMountedRef = useRef(true);
@@ -128,23 +132,31 @@ export default function DetalleGrupoScreen({ route, navigation }) {
         });
 
         const gastosRef = collection(db, "grupos", grupoId, "gastos");
-        const unsubscribeGasto = onSnapshot(gastosRef, (snapshot) => {
+        const unsubscribeGasto = onSnapshot(gastosRef, async (snapshot) => {
             const gastosData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setGasto(gastosData);
-            console.log("Gastos de la base de datos",gastosData);
+
+            const total = gastosData.reduce((sum, gasto) => sum + (Number(gasto.cantidad) || 0), 0);
+            setTotalGastos(total);
+
+            try {
+                const grupoRef = doc(db, "grupos", grupoId);
+                await updateDoc(grupoRef, { Cantidad: total });
+            } catch (error) {
+                console.error("Error actualizando total del grupo:", error);
+            }
         }, (err) => {
             console.error("Error al escuchar los gastos:", err);
         });
 
-
         return () => {
             isMountedRef.current = false;
-            console.log("DetalleGrupoScreen: Dejando de escuchar grupo (cleanup).");
             unsubscribeGrupo();
             unsubscribeGasto();
         };
     }, [grupoId]); // Solo depende de grupoId
 
+    
 
     // --- Funciones Handler para Botones (Lógica de Editar/Eliminar sin cambios) ---
     const handleEditar = () => {
@@ -162,14 +174,33 @@ export default function DetalleGrupoScreen({ route, navigation }) {
                 {
                     text: "Eliminar",
                     onPress: async () => {
+                        if (!isMountedRef.current) return;
                         setIsDeleting(true);
                         try {
-                            const docRefToDelete = doc(db, "grupos", grupo.id);
-                            await deleteDoc(docRefToDelete);
-                            Alert.alert("Éxito", "Grupo eliminado correctamente.");
+                            const grupoRef = doc(db, "grupos", grupo.id);
+                            const gastosRef = collection(db, "grupos", grupo.id, "gastos");
+
+                            // 1. Obtener todos los documentos de la subcolección 'gastos'
+                            const gastosSnapshot = await getDocs(gastosRef);
+                            
+                            // 2. Crear un batch para eliminar todos los gastos
+                            const batch = writeBatch(db);
+                            gastosSnapshot.forEach((gastoDoc) => {
+                                batch.delete(gastoDoc.ref);
+                            });
+                            
+                            // 3. Ejecutar el batch para eliminar los gastos
+                            await batch.commit();
+                            console.log(`DetalleGrupoScreen: Subcolección 'gastos' del grupo ${grupo.id} eliminada.`);
+
+                            // 4. Eliminar el documento del grupo
+                            await deleteDoc(grupoRef);
+                            
+                            Alert.alert("Éxito", "Grupo y todos sus gastos eliminados correctamente.");
                             navigation.goBack();
+
                         } catch (error) {
-                            console.error("Error eliminando grupo:", error);
+                            console.error("Error eliminando grupo y sus gastos:", error);
                             Alert.alert("Error", "No se pudo eliminar el grupo. Inténtalo de nuevo.");
                             if(isMountedRef.current) setIsDeleting(false);
                         }
@@ -182,24 +213,42 @@ export default function DetalleGrupoScreen({ route, navigation }) {
     };
 
     const handleAgregarGasto = async (gastoData) => {
-
-        
-
         try {
             console.log("datos del gasto", gastoData);
-    
             let fotoURL = null;
-    
+
             // Solo sube imagen si se proporcionó una
             if (gastoData.foto) {
                 fotoURL = await subirImagenCloudinary(gastoData.foto);
             }
+
+            const participantes = grupo.participantes.map(p => 
+                typeof p === 'string' ? { uid: p, nombreParaMostrar: '' } : p
+            );              
+            
+            const pagadoPor = usuarioAutenticado.uid;
+            const cantidad = Number(gastoData.valor);
+            const montoPorPersona = cantidad / participantes.length;
+
+            console.log("Deudas:", deudas);
+
+
+            const deudas = participantes
+            .filter(uid => uid !== pagadoPor)
+            .map(uid => ({
+                deudor: uid,
+                acreedor: pagadoPor,
+                monto: montoPorPersona
+            }));
     
             await addDoc(collection(db, 'grupos', grupo.id, 'gastos'), {
                 nombre: gastoData.gasto,             // o descripcion
                 cantidad: Number(gastoData.valor),   // asegúrate de que sea número
                 fechaCreacion: new Date(),           // o gastoData.fecha si la eliges
-                fotoURL: fotoURL || null
+                fotoURL: fotoURL || null,
+                pagadoPor,
+                participantes,
+                deudas,
             });
     
             Alert.alert('Gasto agregado');
@@ -209,7 +258,6 @@ export default function DetalleGrupoScreen({ route, navigation }) {
             Alert.alert("Error", "No se pudo guardar el gasto.");
         }
     };
-    
 
     // --- Lógica de Renderizado ---
     if (loading) { // Simplificado: solo un estado de carga general
@@ -231,21 +279,15 @@ export default function DetalleGrupoScreen({ route, navigation }) {
                 <Text style={styles.titulo}>{grupo.nombre}</Text>
                 {grupo.descripcion ? (<Text style={styles.descripcion}>{grupo.descripcion}</Text>) : (<Text style={styles.descripcion}>Sin descripción.</Text>)}
 
-                {/* Mostrar Cantidad (sin cambios en esta parte) */}
-                {typeof grupo.Cantidad === 'number' ? (
-                    <>
-                        <Text style={styles.label}>Valor ingresado</Text>
-                        <Text style={styles.descripcion}>
-                            {new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(grupo.Cantidad)}
-                        </Text>
-                    </>
-                ) : (
-                     grupo.Cantidad !== undefined && grupo.Cantidad !== null ?
-                        <Text style={styles.descripcion}>Valor: {String(grupo.Cantidad)} (Formato no numérico)</Text> :
-                        <Text style={styles.descripcion}>Cantidad no especificada.</Text>
-                )}
+                <Text style={styles.label}>Total de gastos</Text>
+                <Text style={styles.descripcion}>
+                    {new Intl.NumberFormat('es-CO', {
+                        style: 'currency',
+                        currency: 'COP',
+                        minimumFractionDigits: 0
+                    }).format(totalGastos)}
+                </Text>
             
-
                 <View style={styles.separador} />
 
                 {/* Mostrar Participantes directamente desde grupo.participantes */}
@@ -274,9 +316,8 @@ export default function DetalleGrupoScreen({ route, navigation }) {
             </View>
 
             <View style={styles.separador} />
-            
 
-            <GastosModal visible={mostrar_modal} onClose={() => setModal(false)} onSubmit={handleAgregarGasto} />
+            <GastosModal visible={mostrar_modal} onClose={() => setModal(false)} onSubmit={handleAgregarGasto} participantes={grupo.participantes} usuarioAutenticado={usuarioAutenticado}/>
             
             <View style={styles.contenedorGastos}>
                 <Text style={styles.label}>Gastos registrados: </Text>
@@ -293,7 +334,6 @@ export default function DetalleGrupoScreen({ route, navigation }) {
                         <Text style={styles.descripcion}>
                             {gasto.nombre}
                         </Text>
-
 
                         <Text style={styles.descripcion}>
                             {new Intl.NumberFormat('es-CO', {
@@ -319,7 +359,6 @@ export default function DetalleGrupoScreen({ route, navigation }) {
                   <Text style={styles.noParticipantes}>Aún no se han registrado gastos.</Text>
                 )}
             </View>
-
 
         </ScrollView>
     );

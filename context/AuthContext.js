@@ -1,4 +1,3 @@
-// En AuthContext.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import {
   getAuth,
@@ -8,7 +7,7 @@ import {
   signOut
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { app, db } from '../firebaseConfig'; // Ajusta la RUTA
+import { app, db } from '../firebaseConfig'; 
 import { ActivityIndicator, Alert } from 'react-native'; // Alert para updateUserPhoneNumber
 
 const auth = getAuth(app);
@@ -17,18 +16,17 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [usuarioAutenticado, setUsuarioAutenticado] = useState(null);
   const [perfilUsuarioActual, setPerfilUsuarioActual] = useState(null);
-  const [cargandoAutenticacion, setCargandoAutenticacion] = useState(true); // SÍ, empieza en true
+  const [cargandoAutenticacion, setCargandoAutenticacion] = useState(true); 
   const [cargandoPerfil, setCargandoPerfil] = useState(false);
 
   const obtenerPerfilUsuario = async (objetoUsuarioAuth) => {
-    // ... (código de obtenerPerfilUsuario sin cambios, igual que antes)
+    // código de obtenerPerfilUsuario 
     if (!objetoUsuarioAuth) {
         setPerfilUsuarioActual(null);
         return;
     }
     // Solo activa cargandoPerfil si no estamos ya en la carga inicial de autenticación
     // para evitar doble spinner si el perfil se carga rápido.
-    // O podrías decidir que el cargandoAutenticacion global cubre esto la primera vez.
     if (!cargandoAutenticacion) setCargandoPerfil(true);
 
     console.log("AuthContext: Buscando perfil para UID:", objetoUsuarioAuth.uid);

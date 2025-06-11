@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal, View, Text, Button, TextInput, Image, Alert, Platform } from 'react-native';
+import { Modal, View, Text, Button, TextInput, Image, Alert } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library';
 
@@ -8,7 +8,7 @@ import { styles } from './../styles';
 import { MandarNotificacion } from './Notificaciones';
 import { PermisoNotificacionAsync } from './Notificaciones';
 
-export function GastosModal({ visible, onClose, onSubmit }) {
+export function GastosModal({ visible, onClose, onSubmit, usuarioAutenticado }) {
   const [permiso, pedirPermiso] = useCameraPermissions();
   const [gasto, setGasto] = useState('');
   const [valor, setValor] = useState('');
@@ -89,6 +89,7 @@ export function GastosModal({ visible, onClose, onSubmit }) {
       gasto,
       valor: parseFloat(valor),
       foto: fotoTomada,
+      usuarioAutenticado,
     };
 
     onSubmit(gastoData);

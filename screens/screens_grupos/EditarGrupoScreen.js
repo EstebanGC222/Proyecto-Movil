@@ -26,7 +26,6 @@ export default function EditarGrupoScreen({ route, navigation }) {
   const [cargandoContactosTelefono, setCargandoContactosTelefono] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [cantidad, setCantidad] = useState('');
 
   const [usuariosRegistrados, setUsuariosRegistrados] = useState([]);
   const [cargandoUsuarios, setCargandoUsuarios] = useState(true);
@@ -79,7 +78,6 @@ export default function EditarGrupoScreen({ route, navigation }) {
           const grupoData = { id: docSnapGrupo.id, ...docSnapGrupo.data() };
           setNombreGrupo(grupoData.nombre || '');
           setDescripcionGrupo(grupoData.descripcion || '');
-          setCantidad(grupoData.Cantidad !== undefined ? String(grupoData.Cantidad) : '');
 
           // Filtramos al usuarioAutenticado de la lista de participantes que cargamos del grupo
           // para que `participantesSeleccionados` solo contenga a los OTROS miembros.
@@ -174,9 +172,6 @@ export default function EditarGrupoScreen({ route, navigation }) {
   const handleGuardarCambios = useCallback(async () => {
     Keyboard.dismiss();
     if (!grupoId || !nombreGrupo.trim()) { /* ... alerta ... */ return; }
-    const cantidadLimpia = String(cantidad).replace(/\./g, '');
-    const cantidadNumerica = Number(cantidadLimpia);
-    if (String(cantidad).trim() === '' || isNaN(cantidadNumerica) || cantidadNumerica <= 0) { /* ... alerta ... */ return; }
 
     // Construir la lista final de participantes para Firestore
     // Siempre incluye al editor (usuarioAutenticado) con el nombre "Tú"
@@ -208,7 +203,6 @@ export default function EditarGrupoScreen({ route, navigation }) {
         nombre: nombreGrupo.trim(),
         descripcion: descripcionGrupo.trim(),
         participantes: participantesFinalesParaGuardar,
-        Cantidad: cantidadNumerica,
       };
       const docRef = doc(db, "grupos", grupoId);
       await updateDoc(docRef, datosActualizados);
@@ -220,7 +214,7 @@ export default function EditarGrupoScreen({ route, navigation }) {
     } finally {
       setIsSubmitting(false);
     }
-  }, [grupoId, nombreGrupo, descripcionGrupo, participantesSeleccionados, cantidad, navigation, usuarioAutenticado]);
+  }, [grupoId, nombreGrupo, descripcionGrupo, participantesSeleccionados, navigation, usuarioAutenticado]);
 
   // --- FILTRADO DE CONTACTOS ---
   const filteredContactsDelTelefono = useMemo(() => {
@@ -289,17 +283,6 @@ export default function EditarGrupoScreen({ route, navigation }) {
         <TextInput style={styles.input} value={nombreGrupo} onChangeText={setNombreGrupo}/>
         <Text style={styles.label}>Descripción (Opcional)</Text>
         <TextInput style={[styles.input, styles.textArea]} value={descripcionGrupo} onChangeText={setDescripcionGrupo} multiline/>
-
-        <Text style={styles.label}>Cantidad</Text>
-        <TextInput style={styles.input}
-          value={cantidad.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
-          onChangeText={(text) => {
-            const numericValue = text.replace(/[^0-9]/g, '');
-            setCantidad(numericValue);
-          }}
-          keyboardType="number-pad"
-          placeholder="Cantidad actual"
-        />
 
         <View style={styles.buttonContainer}>
             <Button
